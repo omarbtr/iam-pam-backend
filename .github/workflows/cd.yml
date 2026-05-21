@@ -25,10 +25,10 @@ jobs:
 
       - name: Update image tags to current commit
         run: |
-          sed -i "s|\${DOCKER_USERNAME}|${{ secrets.DOCKER_USERNAME }}|g" k8s/backend/deployment.yaml
-          sed -i "s|\${DOCKER_USERNAME}|${{ secrets.DOCKER_USERNAME }}|g" k8s/frontend/deployment.yaml
-          sed -i "s|:latest|:${{ github.sha }}|g" k8s/backend/deployment.yaml
-          sed -i "s|:latest|:${{ github.sha }}|g" k8s/frontend/deployment.yaml
+          sed -i 's|\${DOCKER_USERNAME}|${{ secrets.DOCKER_USERNAME }}|g' k8s/backend/deployment.yaml
+          sed -i 's|\${DOCKER_USERNAME}|${{ secrets.DOCKER_USERNAME }}|g' k8s/frontend/deployment.yaml
+          sed -i 's|:latest|:${{ github.sha }}|g' k8s/backend/deployment.yaml
+          sed -i 's|:latest|:${{ github.sha }}|g' k8s/frontend/deployment.yaml
 
       - name: Apply namespace and config
         run: |
