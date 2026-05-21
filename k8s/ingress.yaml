@@ -23,7 +23,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: iam-pam-backend
+                name: backend
                 port:
                   number: 8081
           # WebSocket endpoints (terminal, RDP, web proxy)
@@ -31,7 +31,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: iam-pam-backend
+                name: backend
                 port:
                   number: 8081
           # Web proxy sessions
@@ -39,7 +39,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: iam-pam-backend
+                name: backend
                 port:
                   number: 8081
           # Keycloak auth server
@@ -63,6 +63,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: iam-pam-frontend
+                name: frontend
                 port:
                   number: 80
