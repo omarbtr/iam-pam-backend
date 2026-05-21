@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>IAM-PAM Backend — Documentation Technique</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 13px; color: #222; background: #fff; }
+
+  /* PAGE BREAK */
+  .page-break { page-break-after: always; }
+
+  /* COVER PAGE */
+  .cover {
+    height: 100vh; display: flex; flex-direction: column;
+    justify-content: center; align-items: center; text-align: center;
+    background: linear-gradient(135deg, #1a237e 0%, #283593 50%, #1565c0 100%);
+    color: white; padding: 60px;
+  }
+  .cover .badge {
+    background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 20px; padding: 6px 20px; font-size: 12px; letter-spacing: 2px;
+    text-transform: uppercase; margin-bottom: 30px;
+  }
+  .cover h1 { font-size: 48px; font-weight: 800; margin-bottom: 12px; letter-spacing: -1px; }
+  .cover h2 { font-size: 22px; font-weight: 300; opacity: 0.85; margin-bottom: 40px; }
+  .cover .divider { width: 80px; height: 3px; background: #64b5f6; margin: 30px auto; border-radius: 2px; }
+  .cover .meta { font-size: 13px; opacity: 0.7; line-height: 2; }
+  .cover .meta strong { opacity: 1; color: #90caf9; }
+
+  /* TOC */
+  .toc { padding: 60px 80px; }
+  .toc h2 { font-size: 28px; color: #1a237e; border-bottom: 3px solid #1565c0; padding-bottom: 10px; margin-bottom: 30px; }
+  .toc-section { margin-bottom: 8px; }
+  .toc-section a { color: #1565c0; text-decoration: none; font-size: 14px; }
+  .toc-section a:hover { text-decoration: underline; }
+  .toc-section.main { font-weight: 700; font-size: 15px; margin-top: 15px; }
+  .toc-section.sub { padding-left: 25px; color: #555; font-size: 13px; }
+  .toc-dots { border-bottom: 1px dotted #aaa; flex: 1; margin: 0 8px; position: relative; top: -3px; display: inline-block; width: 200px; }
+
+  /* CONTENT */
+  .content { padding: 50px 80px; }
+
+  /* SECTION HEADERS */
+  h1.section-title {
+    font-size: 32px; color: #1a237e; font-weight: 800;
+    border-left: 6px solid #1565c0; padding-left: 20px;
+    margin-bottom: 30px; margin-top: 10px;
+  }
+  h2.subsection {
+    font-size: 20px; color: #283593; font-weight: 700;
+    border-bottom: 2px solid #e3f2fd; padding-bottom: 8px;
+    margin-top: 35px; margin-bottom: 15px;
+  }
+  h3.subsubsection {
+    font-size: 16px; color: #1565c0; font-weight: 600;
+    margin-top: 20px; margin-bottom: 10px;
+  }
+
+  /* TEXT */
+  p { line-height: 1.7; margin-bottom: 12px; color: #333; }
+  ul, ol { margin-left: 25px; margin-bottom: 12px; }
+  li { line-height: 1.8; color: #333; }
+  strong { color: #1a237e; }
+
+  /* CARDS */
+  .card {
+    background: #f8f9ff; border: 1px solid #e3e8f0; border-radius: 8px;
+    padding: 20px; margin-bottom: 20px; border-left: 4px solid #1565c0;
+  }
+  .card-red { border-left-color: #c62828; background: #fff5f5; }
+  .card-green { border-left-color: #2e7d32; background: #f1f8e9; }
+  .card-orange { border-left-color: #e65100; background: #fff8f1; }
+  .card-purple { border-left-color: #6a1b9a; background: #f9f0ff; }
+  .card h4 { font-size: 15px; margin-bottom: 8px; }
+
+  /* TABLES */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12.5px; }
+  th { background: #1a237e; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+  td { padding: 9px 12px; border-bottom: 1px solid #e0e0e0; }
+  tr:nth-child(even) { background: #f5f7ff; }
+  tr:hover { background: #e8eaf6; }
+
+  /* CODE / BADGES */
+  code {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: #e8eaf6; color: #283593; padding: 2px 6px;
+    border-radius: 4px; font-size: 12px;
+  }
+  .badge-role {
+    display: inline-block; padding: 2px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 700; margin: 2px;
+  }
+  .role-admin { background: #c62828; color: white; }
+  .role-tenant-admin { background: #1565c0; color: white; }
+  .role-user { background: #2e7d32; color: white; }
+  .role-pam { background: #6a1b9a; color: white; }
+  .role-auditor { background: #e65100; color: white; }
+  .role-public { background: #546e7a; color: white; }
+
+  /* HTTP METHOD BADGES */
+  .method { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 700; margin-right: 6px; font-family: monospace; }
+  .get { background: #e3f2fd; color: #1565c0; border: 1px solid #90caf9; }
+  .post { background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; }
+  .put { background: #fff8e1; color: #e65100; border: 1px solid #ffcc80; }
+  .delete { background: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+
+  /* ENDPOINT BLOCK */
+  .endpoint {
+    background: #fafafa; border: 1px solid #e0e0e0; border-radius: 6px;
+    padding: 12px 16px; margin-bottom: 10px;
+  }
+  .endpoint-url { font-family: monospace; font-size: 13px; color: #333; font-weight: 600; }
+  .endpoint-desc { font-size: 12px; color: #555; margin-top: 4px; }
+
+  /* WORKFLOW */
+  .workflow-step {
+    display: flex; align-items: flex-start; margin-bottom: 12px;
+  }
+  .step-num {
+    background: #1565c0; color: white; border-radius: 50%;
+    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; flex-shrink: 0; margin-right: 14px; margin-top: 2px;
+  }
+
+  /* ENTITY FIELD */
+  .field-row { display: flex; gap: 10px; margin-bottom: 6px; align-items: baseline; }
+  .field-name { font-family: monospace; color: #1565c0; font-weight: 700; min-width: 200px; font-size: 12.5px; }
+  .field-type { color: #6a1b9a; font-family: monospace; font-size: 11px; min-width: 120px; }
+  .field-desc { color: #555; font-size: 12px; }
+
+  /* INFO BOX */
+  .info-box {
+    background: #e3f2fd; border: 1px solid #90caf9; border-radius: 6px;
+    padding: 14px 18px; margin-bottom: 16px; font-size: 13px;
+  }
+  .warning-box {
+    background: #fff8e1; border: 1px solid #ffcc80; border-radius: 6px;
+    padding: 14px 18px; margin-bottom: 16px; font-size: 13px;
+  }
+
+  /* ENUM VALUES */
+  .enum-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .enum-val {
+    background: #e8eaf6; border: 1px solid #c5cae9; border-radius: 4px;
+    padding: 3px 10px; font-family: monospace; font-size: 12px; color: #283593;
+  }
+
+  /* PRINT */
+  @media print {
+    .cover { height: 100vh; page-break-after: always; }
+    .toc { page-break-after: always; }
+    .page-break { page-break-after: always; }
+    body { font-size: 12px; }
+    h1.section-title { font-size: 26px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!--                       PAGE DE COUVERTURE                      -->
+<!-- ============================================================ -->
+<div class="cover page-break">
+  <div class="badge">Documentation Technique — PFE ESPRIT 2026</div>
+  <h1>IAM-PAM Backend</h1>
+  <h2>Identity & Access Management + Privileged Access Management</h2>
+  <div class="divider"></div>
+  <div class="meta">
+    <strong>Framework :</strong> Spring Boot 4.0.2 — Java 17<br>
+    <strong>Base de données :</strong> PostgreSQL (multi-schémas)<br>
+    <strong>Authentification :</strong> Keycloak 26.0.7 — OAuth2 / JWT<br>
+    <strong>Port :</strong> 8081 &nbsp;|&nbsp; <strong>Swagger :</strong> /swagger-ui.html<br>
+    <strong>Date :</strong> Mars 2026
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--                     TABLE DES MATIÈRES                        -->
+<!-- ============================================================ -->
+<div class="toc page-break">
+  <h2>Table des Matières</h2>
+
+  <div class="toc-section main">1. Vue d'ensemble du projet</div>
+  <div class="toc-section sub">1.1 Description générale</div>
+  <div class="toc-section sub">1.2 Stack technique</div>
+  <div class="toc-section sub">1.3 Architecture multi-tenant</div>
+
+  <div class="toc-section main">2. Modèle de données — Entités JPA</div>
+  <div class="toc-section sub">2.1 Tenant</div>
+  <div class="toc-section sub">2.2 TenantService</div>
+  <div class="toc-section sub">2.3 Resource</div>
+  <div class="toc-section sub">2.4 AccessRequest</div>
+  <div class="toc-section sub">2.5 AuditLog</div>
+
+  <div class="toc-section main">3. Services métier</div>
+  <div class="toc-section sub">3.1 TenantManagementService</div>
+  <div class="toc-section sub">3.2 KeycloakAdminService</div>
+  <div class="toc-section sub">3.3 AccessRequestService</div>
+  <div class="toc-section sub">3.4 ResourceService</div>
+  <div class="toc-section sub">3.5 AuditService</div>
+  <div class="toc-section sub">3.6 TenantServiceChecker</div>
+
+  <div class="toc-section main">4. API REST — Endpoints</div>
+  <div class="toc-section sub">4.1 Tenant Management</div>
+  <div class="toc-section sub">4.2 User Management (AD/LDAP)</div>
+  <div class="toc-section sub">4.3 Service Subscriptions</div>
+  <div class="toc-section sub">4.4 PAM Resources</div>
+  <div class="toc-section sub">4.5 PAM Access Requests</div>
+  <div class="toc-section sub">4.6 Audit Logs</div>
+
+  <div class="toc-section main">5. Sécurité & Authentification</div>
+  <div class="toc-section sub">5.1 Modèle de rôles Keycloak</div>
+  <div class="toc-section sub">5.2 JWT & extraction des rôles</div>
+  <div class="toc-section sub">5.3 TenantInterceptor</div>
+  <div class="toc-section sub">5.4 Isolation multi-tenant</div>
+
+  <div class="toc-section main">6. Workflows fonctionnels</div>
+  <div class="toc-section sub">6.1 Création & onboarding d'un tenant</div>
+  <div class="toc-section sub">6.2 Import d'un utilisateur depuis l'AD</div>
+  <div class="toc-section sub">6.3 Cycle de vie d'une demande d'accès PAM</div>
+
+  <div class="toc-section main">7. Configuration & Infrastructure</div>
+</div>
+
+<!-- ============================================================ -->
+<!--             SECTION 1 — VUE D'ENSEMBLE                        -->
+<!-- ============================================================ -->
+<div class="content page-break">
+  <h1 class="section-title">1. Vue d'ensemble du projet</h1>
+
+  <h2 class="subsection">1.1 Description générale</h2>
+  <p>
+    <strong>IAM-PAM Backend</strong> est une plateforme SaaS multi-tenant développée dans le cadre d'un
+    Projet de Fin d'Études à l'ESPRIT. Elle combine deux domaines de cybersécurité complémentaires :
+  </p>
+  <div class="card">
+    <h4>🔐 IAM — Identity and Access Management</h4>
+    <p>Gestion centralisée des identités, des rôles et des droits d'accès pour chaque organisation (tenant). Intégration avec Active Directory/LDAP via Keycloak pour l'import des utilisateurs existants.</p>
+  </div>
+  <div class="card card-purple">
+    <h4>🛡️ PAM — Privileged Access Management</h4>
+    <p>Contrôle des accès privilégiés aux ressources sensibles (serveurs SSH, sessions RDP, bases de données, APIs, applications web). Chaque accès passe par un workflow de demande → approbation → expiration avec traçabilité complète.</p>
+  </div>
+
+  <h2 class="subsection">1.2 Stack technique</h2>
+  <table>
+    <tr><th>Composant</th><th>Technologie</th><th>Version</th><th>Rôle</th></tr>
+    <tr><td><strong>Framework Backend</strong></td><td>Spring Boot</td><td>4.0.2</td><td>API REST, IoC, scheduling</td></tr>
+    <tr><td><strong>Langage</strong></td><td>Java</td><td>17</td><td>Langage principal</td></tr>
+    <tr><td><strong>ORM</strong></td><td>Spring Data JPA / Hibernate</td><td>7.2.1</td><td>Persistance et mapping objet-relationnel</td></tr>
+    <tr><td><strong>Base de données</strong></td><td>PostgreSQL</td><td>42.7.9 (driver)</td><td>Stockage multi-schémas</td></tr>
+    <tr><td><strong>Authentification</strong></td><td>Keycloak</td><td>26.0.7</td><td>Serveur OAuth2/OIDC, gestion des utilisateurs et groupes</td></tr>
+    <tr><td><strong>Sécurité</strong></td><td>Spring Security + OAuth2</td><td>7.0.2</td><td>Validation JWT, contrôle d'accès</td></tr>
+    <tr><td><strong>Documentation API</strong></td><td>SpringDoc OpenAPI (Swagger)</td><td>2.8.3</td><td>Documentation interactive des endpoints</td></tr>
+    <tr><td><strong>Pool de connexions</strong></td><td>HikariCP</td><td>7.0.2</td><td>Pool de connexions PostgreSQL (max 10)</td></tr>
+    <tr><td><strong>Client Keycloak</strong></td><td>keycloak-admin-client</td><td>26.0.7</td><td>Appels API admin Keycloak (groupes, users, rôles)</td></tr>
+    <tr><td><strong>Utilitaires</strong></td><td>Lombok</td><td>1.18.36</td><td>Génération automatique de code boilerplate</td></tr>
+    <tr><td><strong>Monitoring</strong></td><td>Spring Actuator</td><td>4.0.2</td><td>Health checks, métriques</td></tr>
+  </table>
+
+  <h2 class="subsection">1.3 Architecture multi-tenant</h2>
+  <p>
+    Chaque organisation cliente (tenant) est parfaitement isolée des autres grâce à une architecture
+    multi-tenant basée sur deux mécanismes :
+  </p>
+  <div class="workflow-step">
+    <div class="step-num">1</div>
+    <div>
+      <strong>Isolation PostgreSQL par schéma :</strong> Chaque tenant possède son propre schéma PostgreSQL
+      (ex : <code>tenant_bank_a</code>). Le schéma <code>shared</code> contient les tables communes
+      (tenants, services, audit_logs).
+    </div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">2</div>
+    <div>
+      <strong>Isolation Keycloak par groupe :</strong> Chaque tenant est représenté par un groupe Keycloak.
+      Chaque utilisateur appartient à un groupe-tenant. Le JWT contient le claim <code>groups</code>
+      utilisé pour identifier le tenant actif.
+    </div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">3</div>
+    <div>
+      <strong>TenantContext (ThreadLocal) :</strong> Le <code>TenantInterceptor</code> extrait le
+      <code>tenantId</code> du JWT à chaque requête et l'injecte dans un <code>ThreadLocal</code>.
+      Tous les repositories l'utilisent pour filtrer automatiquement les données.
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>Realm Keycloak :</strong> <code>iam-pam-realm</code> &nbsp;|&nbsp;
+    <strong>Client :</strong> <code>iam-pam-backend</code> &nbsp;|&nbsp;
+    <strong>Port Keycloak :</strong> 8080 &nbsp;|&nbsp;
+    <strong>Port Backend :</strong> 8081
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--             SECTION 2 — MODÈLE DE DONNÉES                     -->
+<!-- ============================================================ -->
+<div class="content page-break">
+  <h1 class="section-title">2. Modèle de données — Entités JPA</h1>
+
+  <h2 class="subsection">2.1 Entité Tenant</h2>
+  <p>Représente une organisation cliente. Table <code>shared.tenants</code>.</p>
+  <table>
+    <tr><th>Champ</th><th>Type</th><th>Contrainte</th><th>Description</th></tr>
+    <tr><td><code>id</code></td><td>Long</td><td>PK, auto-increment</td><td>Identifiant technique</td></tr>
+    <tr><td><code>tenantId</code></td><td>String</td><td>UNIQUE, NOT NULL</td><td>Identifiant métier (ex: tenant-bank-a)</td></tr>
+    <tr><td><code>tenantName</code></td><td>String</td><td>NOT NULL</td><td>Nom d'affichage de l'organisation</td></tr>
+    <tr><td><code>schemaName</code></td><td>String</td><td>NOT NULL</td><td>Schéma PostgreSQL dédié (ex: tenant_bank_a)</td></tr>
+    <tr><td><code>domain</code></td><td>String</td><td>UNIQUE, nullable</td><td>Domaine personnalisé (ex: bank.iam-pam.com)</td></tr>
+    <tr><td><code>domainConfigured</code></td><td>Boolean</td><td>default false</td><td>Flag de configuration domaine obligatoire</td></tr>
+    <tr><td><code>maxUsers</code></td><td>Integer</td><td>NOT NULL, default 5</td><td>Limite maximale d'utilisateurs</td></tr>
+    <tr><td><code>currentUserCount</code></td><td>Integer</td><td>NOT NULL, default 0</td><td>Compteur d'utilisateurs actuel</td></tr>
+    <tr><td><code>isActive</code></td><td>Boolean</td><td>default true</td><td>Statut d'activation du tenant</td></tr>
+    <tr><td><code>createdAt</code></td><td>LocalDateTime</td><td>auto, immutable</td><td>Date de création</td></tr>
+    <tr><td><code>updatedAt</code></td><td>LocalDateTime</td><td>auto-update</td><td>Date de dernière modification</td></tr>
+  </table>
+  <p><strong>Méthodes métier :</strong></p>
+  <ul>
+    <li><code>canAddUser()</code> — Retourne <code>true</code> si <code>currentUserCount &lt; maxUsers</code></li>
+    <li><code>incrementUserCount()</code> — Incrémente le compteur (avec vérification limite)</li>
+    <li><code>decrementUserCount()</code> — Décrémente le compteur (avec garde ≥ 0)</li>
+  </ul>
+
+  <h2 class="subsection">2.2 Entité TenantService</h2>
+  <p>Représente un service souscrit par un tenant. Table <code>shared.tenant_services</code>.</p>
+  <table>
+    <tr><th>Champ</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+    <tr><td><code>tenantId</code></td><td>String</td><td>Référence au tenant</td></tr>
+    <tr><td><code>serviceType</code></td><td>ServiceType (enum)</td><td>Type de service souscrit</td></tr>
+    <tr><td><code>isActive</code></td><td>Boolean</td><td>Abonnement actif</td></tr>
+    <tr><td><code>subscribedAt</code></td><td>LocalDateTime</td><td>Date de souscription</td></tr>
+    <tr><td><code>expiresAt</code></td><td>LocalDateTime</td><td>Date d'expiration (null = illimité)</td></tr>
+  </table>
+  <p><strong>Types de services disponibles (ServiceType enum) :</strong></p>
+  <div class="enum-list">
+    <span class="enum-val">IAM</span>
+    <span class="enum-val">PAM</span>
+    <span class="enum-val">MFA</span>
+    <span class="enum-val">SSO</span>
+    <span class="enum-val">AUDIT</span>
+    <span class="enum-val">REPORTING</span>
+  </div>
+
+  <h2 class="subsection">2.3 Entité Resource</h2>
+  <p>Représente une ressource PAM accessible. Table <code>resources</code>.</p>
+  <table>
+    <tr><th>Champ</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+    <tr><td><code>name</code></td><td>String</td><td>Nom de la ressource (unique par tenant)</td></tr>
+    <tr><td><code>type</code></td><td>ResourceType (enum)</td><td>Type de ressource</td></tr>
+    <tr><td><code>host</code></td><td>String</td><td>Adresse IP ou hostname</td></tr>
+    <tr><td><code>port</code></td><td>Integer</td><td>Port de connexion</td></tr>
+    <tr><td><code>description</code></td><td>String</td><td>Description fonctionnelle</td></tr>
+    <tr><td><code>tenantId</code></td><td>String</td><td>Propriétaire (isolation multi-tenant)</td></tr>
+    <tr><td><code>isActive</code></td><td>Boolean</td><td>Suppression logique (soft delete)</td></tr>
+  </table>
+  <p><strong>Types de ressources (ResourceType enum) :</strong></p>
+  <div class="enum-list">
+    <span class="enum-val">SSH</span>
+    <span class="enum-val">RDP</span>
+    <span class="enum-val">DATABASE</span>
+    <span class="enum-val">WEB</span>
+    <span class="enum-val">API</span>
+  </div>
+
+  <h2 class="subsection">2.4 Entité AccessRequest</h2>
+  <p>Représente une demande d'accès PAM. Table <code>access_requests</code>.</p>
+  <table>
+    <tr><th>Champ</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+    <tr><td><code>requesterUsername</code></td><td>String</td><td>Utilisateur demandeur</td></tr>
+    <tr><td><code>tenantId</code></td><td>String</td><td>Tenant d'appartenance</td></tr>
+    <tr><td><code>resource</code></td><td>Resource (ManyToOne)</td><td>Ressource demandée</td></tr>
+    <tr><td><code>justification</code></td><td>String</td><td>Motivation de la demande</td></tr>
+    <tr><td><code>status</code></td><td>RequestStatus (enum)</td><td>État de la demande</td></tr>
+    <tr><td><code>durationHours</code></td><td>Integer</td><td>Durée d'accès demandée (heures)</td></tr>
+    <tr><td><code>reviewedBy</code></td><td>String</td><td>Admin qui a traité la demande</td></tr>
+    <tr><td><code>reviewComment</code></td><td>String</td><td>Commentaire de l'administrateur</td></tr>
+    <tr><td><code>requestedAt</code></td><td>LocalDateTime</td><td>Date de création</td></tr>
+    <tr><td><code>reviewedAt</code></td><td>LocalDateTime</td><td>Date de traitement</td></tr>
+    <tr><td><code>expiresAt</code></td><td>LocalDateTime</td><td>Date d'expiration de l'accès</td></tr>
+  </table>
+  <p><strong>Statuts possibles (RequestStatus enum) :</strong></p>
+  <div class="enum-list">
+    <span class="enum-val">PENDING</span>
+    <span class="enum-val">APPROVED</span>
+    <span class="enum-val">REJECTED</span>
+    <span class="enum-val">EXPIRED</span>
+    <span class="enum-val">REVOKED</span>
+  </div>
+
+  <h2 class="subsection">2.5 Entité AuditLog</h2>
+  <p>Trace toutes les actions importantes pour la conformité. Table <code>audit_logs</code>.</p>
+  <table>
+    <tr><th>Champ</th><th>Type</th><th>Description</th></tr>
+    <tr><td><code>id</code></td><td>Long</td><td>Clé primaire</td></tr>
+    <tr><td><code>action</code></td><td>AuditAction (enum)</td><td>Type d'action effectuée</td></tr>
+    <tr><td><code>username</code></td><td>String</td><td>Utilisateur ayant effectué l'action</td></tr>
+    <tr><td><code>tenantId</code></td><td>String</td><td>Tenant concerné</td></tr>
+    <tr><td><code>resourceName</code></td><td>String</td><td>Ressource impliquée</td></tr>
+    <tr><td><code>accessRequestId</code></td><td>Long</td><td>Référence à la demande d'accès</td></tr>
+    <tr><td><code>details</code></td><td>String (TEXT)</td><td>Détails libres de l'action</td></tr>
+    <tr><td><code>ipAddress</code></td><td>String</td><td>Adresse IP du client</td></tr>
+    <tr><td><code>result</code></td><td>AuditResult (enum)</td><td>SUCCESS ou FAILURE</td></tr>
+    <tr><td><code>timestamp</code></td><td>LocalDateTime</td><td>Horodatage (immuable)</td></tr>
+  </table>
+  <p><strong>Actions auditées (AuditAction enum) :</strong></p>
+  <div class="enum-list">
+    <span class="enum-val">USER_LOGIN</span><span class="enum-val">USER_LOGOUT</span>
+    <span class="enum-val">ACCESS_REQUESTED</span><span class="enum-val">ACCESS_APPROVED</span>
+    <span class="enum-val">ACCESS_REJECTED</span><span class="enum-val">ACCESS_REVOKED</span>
+    <span class="enum-val">ACCESS_EXPIRED</span><span class="enum-val">RESOURCE_CREATED</span>
+    <span class="enum-val">RESOURCE_UPDATED</span><span class="enum-val">RESOURCE_DELETED</span>
+    <span class="enum-val">SESSION_STARTED</span><span class="enum-val">SESSION_ENDED</span>
+    <span class="enum-val">PERMISSION_DENIED</span>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--             SECTION 3 — SERVICES MÉTIER                       -->
+<!-- ============================================================ -->
+<div class="content page-break">
+  <h1 class="section-title">3. Services métier</h1>
+
+  <h2 class="subsection">3.1 TenantManagementService</h2>
+  <p>Service central pour la gestion du cycle de vie des tenants. Annoté <code>@Transactional</code>.</p>
+
+  <h3 class="subsubsection">Opérations Super-Admin (rôle : admin)</h3>
+  <table>
+    <tr><th>Méthode</th><th>Description</th><th>Logique principale</th></tr>
+    <tr>
+      <td><code>createTenant(dto)</code></td>
+      <td>Créer un tenant</td>
+      <td>Génère le schemaName, assigne les services, crée le groupe Keycloak (non-bloquant)</td>
+    </tr>
+    <tr>
+      <td><code>updateTenant(id, dto)</code></td>
+      <td>Modifier un tenant</td>
+      <td>Mise à jour nom, maxUsers (vérifie maxUsers ≥ currentUserCount), services, statut</td>
+    </tr>
+    <tr>
+      <td><code>getAllTenants()</code></td>
+      <td>Lister tous les tenants</td>
+      <td>Retourne tous les tenants avec leurs services actifs</td>
+    </tr>
+    <tr>
+      <td><code>getTenantById(tenantId)</code></td>
+      <td>Obtenir un tenant</td>
+      <td>Lookup par tenantId (string), non par ID numérique</td>
+    </tr>
+    <tr>
+      <td><code>deactivateTenant(tenantId)</code></td>
+      <td>Désactiver un tenant</td>
+      <td>Soft delete : <code>isActive = false</code></td>
+    </tr>
+  </table>
+
+  <h3 class="subsubsection">Opérations Tenant-Admin (rôle : tenant-admin)</h3>
+  <table>
+    <tr><th>Méthode</th><th>Description</th><th>Logique principale</th></tr>
+    <tr>
+      <td><code>configureDomain(dto)</code></td>
+      <td>Configurer le domaine</td>
+      <td>Vérifie l'unicité du domaine, met <code>domainConfigured = true</code></td>
+    </tr>
+    <tr>
+      <td><code>isDomainConfigured()</code></td>
+      <td>Vérifier le statut du domaine</td>
+      <td>Lit le flag depuis TenantContext courant</td>
+    </tr>
+    <tr>
+      <td><code>getMyTenant()</code></td>
+      <td>Obtenir mon tenant</td>
+      <td>Utilise TenantContext pour identifier le tenant courant</td>
+    </tr>
+  </table>
+
+  <h2 class="subsection">3.2 KeycloakAdminService</h2>
+  <p>Gestion des utilisateurs et groupes via l'API Admin Keycloak. Utilise <code>client_credentials</code>.</p>
+  <div class="warning-box">
+    ⚠️ <strong>Prérequis :</strong> Le client <code>iam-pam-backend</code> doit avoir <em>Service Accounts Enabled</em>
+    et les rôles <code>view-users</code>, <code>manage-users</code>, <code>query-users</code> assignés
+    dans l'onglet <em>Service Account Roles</em>.
+  </div>
+  <table>
+    <tr><th>Méthode</th><th>Description</th><th>Détail</th></tr>
+    <tr>
+      <td><code>createTenantGroup(tenantId)</code></td>
+      <td>Créer un groupe Keycloak</td>
+      <td>Groupe = isolation du tenant dans Keycloak</td>
+    </tr>
+    <tr>
+      <td><code>searchDirectoryUsers(query)</code></td>
+      <td>Rechercher dans l'AD</td>
+      <td>Retourne max 50 résultats depuis Keycloak (LDAP fédéré)</td>
+    </tr>
+    <tr>
+      <td><code>listDirectoryUsers(first, max)</code></td>
+      <td>Lister les users AD</td>
+      <td>Pagination avec max plafonné à 100</td>
+    </tr>
+    <tr>
+      <td><code>importUserToTenant(tenantId, username, roles)</code></td>
+      <td>Importer un user</td>
+      <td><strong>@Transactional</strong> : vérifie limite (lock pessimiste), ajoute au groupe, assigne rôles, incrémente compteur</td>
+    </tr>
+    <tr>
+      <td><code>removeUserFromTenant(tenantId, username)</code></td>
+      <td>Retirer un user</td>
+      <td><strong>@Transactional</strong> : retire du groupe, décrémente compteur (lock pessimiste)</td>
+    </tr>
+    <tr>
+      <td><code>getTenantUsers(tenantId)</code></td>
+      <td>Lister les users du tenant</td>
+      <td>Membres du groupe Keycloak avec leurs rôles</td>
+    </tr>
+  </table>
+  <div class="info-box">
+    <strong>Protection race condition :</strong> L'import et la suppression utilisent
+    <code>findByTenantIdForUpdate()</code> avec <code>@Lock(PESSIMISTIC_WRITE)</code> pour éviter
+    les corruptions du compteur en cas d'imports simultanés.
+  </div>
+
+  <h2 class="subsection">3.3 AccessRequestService</h2>
+  <p>Gestion du cycle de vie complet des demandes d'accès PAM. Service <code>@Transactional</code>.</p>
+  <table>
+    <tr><th>Méthode</th><th>Rôle requis</th><th>Logique</th></tr>
+    <tr><td><code>createRequest(dto, username)</code></td><td>user / pam-access</td><td>Vérifie appartenance tenant de la ressource, crée en PENDING, log audit ACCESS_REQUESTED</td></tr>
+    <tr><td><code>getAllRequests()</code></td><td>tenant-admin</td><td>Toutes les demandes du tenant courant, triées par date DESC</td></tr>
+    <tr><td><code>getMyRequests(username)</code></td><td>user / pam-access</td><td>Demandes de l'utilisateur courant uniquement</td></tr>
+    <tr><td><code>getPendingRequests()</code></td><td>tenant-admin</td><td>Demandes en statut PENDING du tenant courant</td></tr>
+    <tr><td><code>reviewRequest(id, dto, reviewer)</code></td><td>tenant-admin</td><td>APPROVED → calcule expiresAt = now + durationHours / REJECTED → enregistre commentaire. Log audit.</td></tr>
+    <tr><td><code>revokeRequest(id, admin)</code></td><td>tenant-admin</td><td>Passe le statut à REVOKED. Log audit ACCESS_REVOKED.</td></tr>
+    <tr><td><code>expireRequests()</code></td><td>Automatique (Scheduler)</td><td><strong>@Scheduled(fixedDelay=60000ms)</strong> — Expire les demandes APPROVED dont expiresAt &lt; now. saveAll() en batch.</td></tr>
+  </table>
+
+  <h2 class="subsection">3.4 ResourceService</h2>
+  <p>CRUD des ressources PAM avec isolation tenant et suppression logique.</p>
+  <table>
+    <tr><th>Méthode</th><th>Description</th></tr>
+    <tr><td><code>getAllResources()</code></td><td>Ressources actives du tenant courant</td></tr>
+    <tr><td><code>getById(id)</code></td><td>Ressource avec vérification d'appartenance tenant</td></tr>
+    <tr><td><code>create(dto, username)</code></td><td>Crée la ressource, vérifie unicité du nom par tenant, log RESOURCE_CREATED</td></tr>
+    <tr><td><code>update(id, dto, username)</code></td><td>Mise à jour avec vérification tenant, log RESOURCE_UPDATED</td></tr>
+    <tr><td><code>delete(id, username)</code></td><td>Soft delete (isActive=false), log RESOURCE_DELETED</td></tr>
+    <tr><td><code>getByType(type)</code></td><td>Filtrage par type (SSH, RDP, etc.) pour le tenant courant</td></tr>
+  </table>
+
+  <h2 class="subsection">3.5 AuditService</h2>
+  <p>Persistance des événements d'audit pour la conformité et la traçabilité.</p>
+  <table>
+    <tr><th>Méthode</th><th>Description</th></tr>
+    <tr><td><code>log(action, username, tenantId, resourceName, requestId, details)</code></td><td>Crée et persiste un AuditLog. Appelé par tous les autres services.</td></tr>
+    <tr><td><code>getLogs(page, size)</code></td><td>Logs paginés du tenant courant, triés par timestamp DESC</td></tr>
+    <tr><td><code>getUserLogs(username)</code></td><td>Tous les logs d'un utilisateur dans le tenant courant</td></tr>
+  </table>
+
+  <h2 class="subsection">3.6 TenantServiceChecker</h2>
+  <p>
+    Composant transversal qui vérifie si un tenant a souscrit à un service spécifique avant d'autoriser l'accès.
+    Utilisé via <code>@PreAuthorize</code> ou injection directe dans les services.
+  </p>
+  <div class="card card-green">
+    <strong>Exemple d'utilisation :</strong> Avant d'accéder aux endpoints PAM, le checker vérifie que
+    le tenant a un abonnement actif et non-expiré au service <code>PAM</code>. Lance une
+    <code>ServiceNotSubscribedException</code> (HTTP 403) si non souscrit.
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--             SECTION 4 — API REST                              -->
+<!-- ============================================================ -->
+<div class="content page-break">
+  <h1 class="section-title">4. API REST — Endpoints</h1>
+  <p>Tous les endpoints (sauf <code>/api/public/**</code>) nécessitent un token JWT Bearer valide.
+  L'URL de base est <code>http://localhost:8081</code>.</p>
+
+  <h2 class="subsection">4.1 Tenant Management — <code>/api/admin/tenants</code></h2>
+  <table>
+    <tr><th>Méthode</th><th>URL</th><th>Rôle</th><th>Description</th></tr>
+    <tr>
+      <td><span class="method post">POST</span></td>
+      <td><code>/api/admin/tenants</code></td>
+      <td><span class="badge-role role-admin">admin</span></td>
+      <td>Créer un nouveau tenant avec ses services et maxUsers</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/admin/tenants</code></td>
+      <td><span class="badge-role role-admin">admin</span></td>
+      <td>Lister tous les tenants de la plateforme</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/admin/tenants/{tenantId}</code></td>
+      <td><span class="badge-role role-admin">admin</span></td>
+      <td>Obtenir un tenant par son identifiant string</td>
+    </tr>
+    <tr>
+      <td><span class="method put">PUT</span></td>
+      <td><code>/api/admin/tenants/{tenantId}</code></td>
+      <td><span class="badge-role role-admin">admin</span></td>
+      <td>Modifier le nom, maxUsers, services ou statut d'un tenant</td>
+    </tr>
+    <tr>
+      <td><span class="method delete">DELETE</span></td>
+      <td><code>/api/admin/tenants/{tenantId}</code></td>
+      <td><span class="badge-role role-admin">admin</span></td>
+      <td>Désactiver un tenant (soft delete)</td>
+    </tr>
+    <tr>
+      <td><span class="method post">POST</span></td>
+      <td><code>/api/admin/tenants/my/domain</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td><strong>Première connexion obligatoire.</strong> Configurer le domaine du tenant</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/admin/tenants/my/domain/status</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Vérifier si le domaine est configuré (true/false)</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/admin/tenants/my</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Obtenir les informations de mon tenant</td>
+    </tr>
+  </table>
+
+  <h2 class="subsection">4.2 User Management — <code>/api/admin/users</code></h2>
+  <table>
+    <tr><th>Méthode</th><th>URL</th><th>Rôle</th><th>Description</th></tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/admin/users/directory/search?query=X</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Recherche dans l'annuaire AD/LDAP (max 50 résultats)</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/admin/users/directory?first=0&max=20</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Lister les utilisateurs AD paginés (max 100 par page)</td>
+    </tr>
+    <tr>
+      <td><span class="method post">POST</span></td>
+      <td><code>/api/admin/users/import</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Importer un utilisateur depuis l'AD vers le tenant</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/admin/users</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Lister les utilisateurs du tenant courant</td>
+    </tr>
+    <tr>
+      <td><span class="method delete">DELETE</span></td>
+      <td><code>/api/admin/users/{username}</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Retirer un utilisateur du tenant (décrémente le compteur)</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/admin/users/can-add</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Vérifier si la limite d'utilisateurs est atteinte</td>
+    </tr>
+  </table>
+
+  <h2 class="subsection">4.3 Service Subscriptions — <code>/api/tenant/services</code></h2>
+  <table>
+    <tr><th>Méthode</th><th>URL</th><th>Rôle</th><th>Description</th></tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/tenant/services</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span> <span class="badge-role role-user">user</span></td>
+      <td>Lister les services actifs et souscrits du tenant</td>
+    </tr>
+    <tr>
+      <td><span class="method post">POST</span></td>
+      <td><code>/api/tenant/services/subscribe</code></td>
+      <td><span class="badge-role role-admin">admin</span></td>
+      <td>Ajouter un service à un tenant (IAM, PAM, MFA, etc.)</td>
+    </tr>
+  </table>
+
+  <h2 class="subsection">4.4 PAM Resources — <code>/api/pam/resources</code></h2>
+  <table>
+    <tr><th>Méthode</th><th>URL</th><th>Rôle</th><th>Description</th></tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/pam/resources</code></td>
+      <td><span class="badge-role role-pam">pam-access</span> <span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Lister les ressources PAM actives du tenant</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/pam/resources/{id}</code></td>
+      <td><span class="badge-role role-pam">pam-access</span> <span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Obtenir une ressource PAM par ID</td>
+    </tr>
+    <tr>
+      <td><span class="method post">POST</span></td>
+      <td><code>/api/pam/resources</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Créer une ressource PAM (SSH, RDP, DB, WEB, API)</td>
+    </tr>
+    <tr>
+      <td><span class="method put">PUT</span></td>
+      <td><code>/api/pam/resources/{id}</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Mettre à jour une ressource PAM</td>
+    </tr>
+    <tr>
+      <td><span class="method delete">DELETE</span></td>
+      <td><code>/api/pam/resources/{id}</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Désactiver une ressource PAM (soft delete)</td>
+    </tr>
+  </table>
+
+  <h2 class="subsection">4.5 PAM Access Requests — <code>/api/pam/requests</code></h2>
+  <table>
+    <tr><th>Méthode</th><th>URL</th><th>Rôle</th><th>Description</th></tr>
+    <tr>
+      <td><span class="method post">POST</span></td>
+      <td><code>/api/pam/requests</code></td>
+      <td><span class="badge-role role-user">user</span> <span class="badge-role role-pam">pam-access</span></td>
+      <td>Créer une demande d'accès à une ressource PAM</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/pam/requests/mine</code></td>
+      <td><span class="badge-role role-user">user</span> <span class="badge-role role-pam">pam-access</span></td>
+      <td>Voir mes propres demandes d'accès</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/pam/requests</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Toutes les demandes d'accès du tenant</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/pam/requests/pending</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Demandes en attente d'approbation</td>
+    </tr>
+    <tr>
+      <td><span class="method put">PUT</span></td>
+      <td><code>/api/pam/requests/{id}/review</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Approuver ou rejeter une demande (avec commentaire)</td>
+    </tr>
+    <tr>
+      <td><span class="method put">PUT</span></td>
+      <td><code>/api/pam/requests/{id}/revoke</code></td>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Révoquer un accès précédemment approuvé</td>
+    </tr>
+  </table>
+
+  <h2 class="subsection">4.6 Audit Logs — <code>/api/auditor</code></h2>
+  <table>
+    <tr><th>Méthode</th><th>URL</th><th>Rôle</th><th>Description</th></tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/auditor/logs?page=0&size=20</code></td>
+      <td><span class="badge-role role-auditor">auditor</span> <span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Consulter les logs d'audit paginés du tenant</td>
+    </tr>
+    <tr>
+      <td><span class="method get">GET</span></td>
+      <td><code>/api/auditor/logs/user/{username}</code></td>
+      <td><span class="badge-role role-auditor">auditor</span> <span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Tous les logs d'audit d'un utilisateur</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!--             SECTION 5 — SÉCURITÉ                              -->
+<!-- ============================================================ -->
+<div class="content page-break">
+  <h1 class="section-title">5. Sécurité & Authentification</h1>
+
+  <h2 class="subsection">5.1 Modèle de rôles Keycloak</h2>
+  <p>Le système utilise 5 rôles de realm Keycloak avec des périmètres clairement définis :</p>
+  <table>
+    <tr><th>Rôle Keycloak</th><th>Niveau</th><th>Périmètre d'accès</th></tr>
+    <tr>
+      <td><span class="badge-role role-admin">admin</span></td>
+      <td>Plateforme</td>
+      <td>Créer/modifier/supprimer des tenants, gérer les abonnements de services, accès à toute la plateforme</td>
+    </tr>
+    <tr>
+      <td><span class="badge-role role-tenant-admin">tenant-admin</span></td>
+      <td>Tenant</td>
+      <td>Configurer le domaine, importer/gérer les utilisateurs, gérer les ressources PAM, approuver les demandes d'accès, consulter les audits</td>
+    </tr>
+    <tr>
+      <td><span class="badge-role role-user">user</span></td>
+      <td>Utilisateur</td>
+      <td>Consulter les ressources PAM, créer des demandes d'accès, voir ses propres demandes</td>
+    </tr>
+    <tr>
+      <td><span class="badge-role role-pam">pam-access</span></td>
+      <td>Utilisateur PAM</td>
+      <td>Accéder aux ressources PAM approuvées, créer des demandes d'accès</td>
+    </tr>
+    <tr>
+      <td><span class="badge-role role-auditor">auditor</span></td>
+      <td>Conformité</td>
+      <td>Lecture seule des logs d'audit (pas de modification possible)</td>
+    </tr>
+  </table>
+
+  <h2 class="subsection">5.2 JWT & Extraction des rôles</h2>
+  <p>
+    L'application est configurée comme <strong>OAuth2 Resource Server</strong>. Chaque requête
+    doit inclure un header <code>Authorization: Bearer &lt;jwt&gt;</code>.
+  </p>
+  <div class="info-box">
+    <strong>Issuer URI :</strong> <code>http://localhost:8080/realms/iam-pam-realm</code><br>
+    <strong>JWK Set URI :</strong> <code>http://localhost:8080/realms/iam-pam-realm/protocol/openid-connect/certs</code><br>
+    <strong>Durée du token :</strong> 30 minutes (configurable dans Keycloak Realm Settings → Tokens)
+  </div>
+  <p>
+    La classe <code>SecurityConfig.extractAuthorities()</code> extrait les rôles depuis le claim
+    <code>realm_access.roles</code> du JWT et les préfixe avec <code>ROLE_</code> pour Spring Security.
+    Exemple : le rôle Keycloak <code>tenant-admin</code> devient <code>ROLE_tenant-admin</code>.
+  </p>
+  <p>
+    Le claim <code>groups</code> du JWT contient le groupe-tenant de l'utilisateur (ex: <code>["tenant-bank-a"]</code>).
+    C'est ce claim qui est utilisé par le <code>TenantInterceptor</code> pour établir le contexte tenant.
+  </p>
+
+  <h2 class="subsection">5.3 TenantInterceptor — Middleware de sécurité</h2>
+  <p>
+    Exécuté avant chaque requête HTTP. Il effectue deux opérations critiques :
+  </p>
+  <div class="workflow-step">
+    <div class="step-num">1</div>
+    <div>
+      <strong>Établissement du contexte tenant :</strong> Extrait le premier groupe du claim JWT
+      <code>groups</code> et l'injecte dans <code>TenantContext</code> (ThreadLocal). Tous les
+      repositories utilisent automatiquement ce contexte pour filtrer les données.
+    </div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">2</div>
+    <div>
+      <strong>Enforcement de la configuration du domaine :</strong> Si l'utilisateur a le rôle
+      <code>tenant-admin</code> et que son tenant n'a pas encore configuré son domaine
+      (<code>domainConfigured = false</code>), toute requête hors whitelist retourne :
+      <code>403 Forbidden</code> avec <code>"setupUrl": "/api/admin/tenants/my/domain"</code>
+    </div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">3</div>
+    <div>
+      <strong>Nettoyage du ThreadLocal :</strong> Dans <code>afterCompletion()</code>, le contexte est
+      systématiquement effacé pour éviter les fuites mémoire et les contaminations entre requêtes.
+    </div>
+  </div>
+
+  <p><strong>Endpoints toujours accessibles (whitelist) même sans domaine configuré :</strong></p>
+  <ul>
+    <li><code>POST /api/admin/tenants/my/domain</code> — configurer le domaine</li>
+    <li><code>GET /api/admin/tenants/my/domain/status</code> — vérifier le statut</li>
+    <li><code>GET /api/admin/tenants/my</code> — obtenir les infos du tenant</li>
+  </ul>
+
+  <h2 class="subsection">5.4 Isolation multi-tenant</h2>
+  <p>L'isolation des données entre tenants est garantie à plusieurs niveaux :</p>
+  <table>
+    <tr><th>Niveau</th><th>Mécanisme</th><th>Exemple</th></tr>
+    <tr>
+      <td>HTTP</td>
+      <td>TenantInterceptor → TenantContext (ThreadLocal)</td>
+      <td>tenantId = "tenant-bank-a" injecté dans chaque requête</td>
+    </tr>
+    <tr>
+      <td>Service</td>
+      <td>Vérification explicite d'appartenance</td>
+      <td><code>if (!resource.getTenantId().equals(tenantId)) throw SecurityException</code></td>
+    </tr>
+    <tr>
+      <td>Repository</td>
+      <td>Filtrage par tenantId dans toutes les queries</td>
+      <td><code>findByTenantIdAndIsActiveTrue(tenantId)</code></td>
+    </tr>
+    <tr>
+      <td>DB</td>
+      <td>Schéma PostgreSQL dédié par tenant</td>
+      <td>Schéma <code>tenant_bank_a</code> séparé physiquement</td>
+    </tr>
+    <tr>
+      <td>Keycloak</td>
+      <td>Groupe Keycloak par tenant</td>
+      <td>Groupe <code>tenant-bank-a</code> dans Keycloak</td>
+    </tr>
+  </table>
+</div>
+
+<!-- ============================================================ -->
+<!--             SECTION 6 — WORKFLOWS                             -->
+<!-- ============================================================ -->
+<div class="content page-break">
+  <h1 class="section-title">6. Workflows fonctionnels</h1>
+
+  <h2 class="subsection">6.1 Workflow — Création & Onboarding d'un tenant</h2>
+
+  <div class="workflow-step">
+    <div class="step-num">1</div>
+    <div><strong>[admin] Créer le tenant</strong><br>
+    <code>POST /api/admin/tenants</code> avec <code>tenantId</code>, <code>tenantName</code>, <code>maxUsers</code>, <code>services[]</code><br>
+    → Tenant créé en DB + groupe Keycloak créé + services assignés</div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">2</div>
+    <div><strong>[admin] Créer l'utilisateur tenant-admin dans Keycloak</strong><br>
+    Dans Keycloak Admin Console → Users → Create User → assigner le rôle <code>tenant-admin</code>
+    → ajouter au groupe <code>tenant-bank-a</code></div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">3</div>
+    <div><strong>[tenant-admin] Première connexion → Configuration du domaine</strong><br>
+    Sans domaine configuré, toute requête retourne 403.<br>
+    <code>POST /api/admin/tenants/my/domain</code> avec <code>{"domain": "bank.iam-pam.com"}</code><br>
+    → <code>domainConfigured = true</code>, accès complet débloqué</div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">4</div>
+    <div><strong>[tenant-admin] Import des utilisateurs depuis l'AD</strong><br>
+    Recherche dans l'annuaire → <code>POST /api/admin/users/import</code><br>
+    → User ajouté au groupe Keycloak, rôles assignés, compteur incrémenté</div>
+  </div>
+
+  <h2 class="subsection">6.2 Workflow — Import d'un utilisateur depuis l'Active Directory</h2>
+
+  <div class="workflow-step">
+    <div class="step-num">1</div>
+    <div><strong>Recherche dans l'annuaire</strong><br>
+    <code>GET /api/admin/users/directory/search?query=john</code><br>
+    → Keycloak Admin API interroge le LDAP fédéré, retourne les utilisateurs trouvés</div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">2</div>
+    <div><strong>Vérification de la limite</strong><br>
+    <code>GET /api/admin/users/can-add</code> → vérifie <code>currentUserCount &lt; maxUsers</code></div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">3</div>
+    <div><strong>Import de l'utilisateur</strong><br>
+    <code>POST /api/admin/users/import</code> avec <code>{"username": "john.doe", "roles": ["user", "pam-access"]}</code><br>
+    → Lock pessimiste sur le tenant → Ajout au groupe Keycloak → Assignation des rôles → Incrémentation compteur</div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">4</div>
+    <div><strong>L'utilisateur peut maintenant se connecter</strong><br>
+    Il utilise ses credentials AD (SSO via LDAP fédéré) pour obtenir un token Keycloak</div>
+  </div>
+
+  <h2 class="subsection">6.3 Workflow — Cycle de vie d'une demande d'accès PAM</h2>
+
+  <div class="card card-orange">
+    <strong>Prérequis :</strong> Le tenant doit avoir souscrit au service <code>PAM</code>. L'administrateur
+    doit avoir créé au moins une ressource PAM.
+  </div>
+
+  <div class="workflow-step">
+    <div class="step-num">1</div>
+    <div><strong>[user / pam-access] Créer une demande</strong><br>
+    <code>POST /api/pam/requests</code> avec <code>resourceId</code>, <code>justification</code>, <code>durationHours</code><br>
+    → Demande créée en statut <code>PENDING</code> + audit <code>ACCESS_REQUESTED</code></div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">2</div>
+    <div><strong>[tenant-admin] Consulter les demandes en attente</strong><br>
+    <code>GET /api/pam/requests/pending</code> → Liste des demandes PENDING du tenant</div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">3a</div>
+    <div><strong>[tenant-admin] Approuver la demande</strong><br>
+    <code>PUT /api/pam/requests/{id}/review</code> avec <code>{"status": "APPROVED", "comment": "OK"}</code><br>
+    → Statut = <code>APPROVED</code>, <code>expiresAt = now + durationHours</code>, audit <code>ACCESS_APPROVED</code></div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">3b</div>
+    <div><strong>[tenant-admin] Rejeter la demande</strong><br>
+    → Statut = <code>REJECTED</code>, commentaire enregistré, audit <code>ACCESS_REJECTED</code></div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">4a</div>
+    <div><strong>[Automatique] Expiration de l'accès</strong><br>
+    Le scheduler vérifie toutes les 60 secondes les demandes APPROVED dont <code>expiresAt &lt; now</code><br>
+    → Statut = <code>EXPIRED</code> (saveAll batch)</div>
+  </div>
+  <div class="workflow-step">
+    <div class="step-num">4b</div>
+    <div><strong>[tenant-admin] Révocation manuelle</strong><br>
+    <code>PUT /api/pam/requests/{id}/revoke</code><br>
+    → Statut = <code>REVOKED</code>, audit <code>ACCESS_REVOKED</code></div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!--             SECTION 7 — CONFIGURATION                         -->
+<!-- ============================================================ -->
+<div class="content">
+  <h1 class="section-title">7. Configuration & Infrastructure</h1>
+
+  <h2 class="subsection">7.1 Variables d'environnement</h2>
+  <p>Les valeurs sensibles sont externalisées via des variables d'environnement. En développement local,
+  le fichier <code>src/main/resources/application-local.properties</code> (ignoré par Git) contient les valeurs réelles.</p>
+
+  <table>
+    <tr><th>Variable</th><th>Valeur par défaut</th><th>Description</th></tr>
+    <tr><td><code>KEYCLOAK_SERVER_URL</code></td><td>http://localhost:8080</td><td>URL du serveur Keycloak</td></tr>
+    <tr><td><code>KEYCLOAK_REALM</code></td><td>iam-pam-realm</td><td>Nom du realm Keycloak</td></tr>
+    <tr><td><code>KEYCLOAK_CLIENT_ID</code></td><td>iam-pam-backend</td><td>Client ID Keycloak</td></tr>
+    <tr><td><code>KEYCLOAK_CLIENT_SECRET</code></td><td>changeme</td><td>Secret du client (Service Account)</td></tr>
+    <tr><td><code>DB_URL</code></td><td>jdbc:postgresql://localhost:5432/iam_pam_db</td><td>URL PostgreSQL</td></tr>
+    <tr><td><code>DB_USERNAME</code></td><td>postgres</td><td>Utilisateur PostgreSQL</td></tr>
+    <tr><td><code>DB_PASSWORD</code></td><td>postgres</td><td>Mot de passe PostgreSQL</td></tr>
+  </table>
+
+  <h2 class="subsection">7.2 Configuration PostgreSQL</h2>
+  <table>
+    <tr><th>Paramètre</th><th>Valeur</th></tr>
+    <tr><td>Schéma par défaut Hibernate</td><td><code>shared</code></td></tr>
+    <tr><td>DDL Auto</td><td><code>update</code> (mise à jour auto du schéma)</td></tr>
+    <tr><td>HikariCP — Pool max</td><td>10 connexions</td></tr>
+    <tr><td>HikariCP — Pool min</td><td>5 connexions</td></tr>
+    <tr><td>Connection timeout</td><td>30 secondes</td></tr>
+    <tr><td>Show SQL</td><td>false (désactivé)</td></tr>
+  </table>
+
+  <h2 class="subsection">7.3 Endpoints de monitoring</h2>
+  <table>
+    <tr><th>Endpoint</th><th>Accès</th><th>Description</th></tr>
+    <tr><td><code>/actuator/health</code></td><td>Public</td><td>Santé de l'application (DB, Keycloak)</td></tr>
+    <tr><td><code>/actuator/info</code></td><td>Public</td><td>Informations sur l'application</td></tr>
+    <tr><td><code>/actuator/metrics</code></td><td>Public</td><td>Métriques JVM et applicatives</td></tr>
+    <tr><td><code>/swagger-ui.html</code></td><td>Public</td><td>Documentation interactive Swagger</td></tr>
+    <tr><td><code>/v3/api-docs</code></td><td>Public</td><td>Spécification OpenAPI JSON</td></tr>
+  </table>
+
+  <h2 class="subsection">7.4 Prérequis Keycloak — Configuration Service Account</h2>
+  <p>Pour que les appels à l'API Admin Keycloak fonctionnent correctement :</p>
+  <ol>
+    <li>Dans Keycloak Admin → <strong>iam-pam-realm</strong> → <strong>Clients</strong> → <strong>iam-pam-backend</strong> → onglet <strong>Settings</strong></li>
+    <li>Activer <strong>Service accounts roles</strong></li>
+    <li>Onglet <strong>Service accounts roles</strong> → Filter by clients → <code>realm-management</code></li>
+    <li>Assigner : <code>view-users</code>, <code>manage-users</code>, <code>query-users</code></li>
+  </ol>
+  <p>Pour les utilisateurs tenant-admin, supprimer les <strong>Required Actions</strong> dans l'onglet Details de l'utilisateur dans Keycloak.</p>
+
+  <div class="card card-green" style="margin-top: 40px;">
+    <h4>✅ Résumé des fonctionnalités implementées</h4>
+    <ul style="margin-top: 10px;">
+      <li>✅ Gestion multi-tenant complète (CRUD, isolation, désactivation)</li>
+      <li>✅ Configuration de domaine obligatoire à la première connexion</li>
+      <li>✅ Contrôle de la limite d'utilisateurs par tenant (avec lock pessimiste)</li>
+      <li>✅ Import d'utilisateurs depuis Active Directory/LDAP via Keycloak</li>
+      <li>✅ Abonnements de services par tenant (IAM, PAM, MFA, SSO, AUDIT, REPORTING)</li>
+      <li>✅ Gestion des ressources PAM (SSH, RDP, Database, Web, API)</li>
+      <li>✅ Workflow complet des demandes d'accès PAM avec expiration automatique</li>
+      <li>✅ Audit trail complet de toutes les actions</li>
+      <li>✅ Sécurité JWT stateless avec 5 rôles Keycloak</li>
+      <li>✅ Documentation Swagger avec rôles dans les titres</li>
+    </ul>
+  </div>
+
+  <div style="text-align: center; margin-top: 60px; padding-top: 30px; border-top: 1px solid #e0e0e0; color: #888; font-size: 12px;">
+    IAM-PAM Backend — Documentation Technique &nbsp;|&nbsp; PFE ESPRIT 2026 &nbsp;|&nbsp; Spring Boot 4.0.2 + Keycloak 26.0.7
+  </div>
+</div>
+
+</body>
+</html>
