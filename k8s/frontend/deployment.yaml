@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ${DOCKER_USERNAME}/iam-pam-frontend:latest
+          image: omarbtr/iam-pam-frontend:latest
           ports:
             - containerPort: 80
           readinessProbe:

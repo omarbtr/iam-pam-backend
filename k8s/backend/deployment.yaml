@@ -19,7 +19,7 @@ spec:
           command: ['sh', '-c', 'until nc -z keycloak 8080; do echo waiting for keycloak; sleep 5; done']
       containers:
         - name: backend
-          image: ${DOCKER_USERNAME}/iam-pam-backend:latest
+          image: omarbtr/iam-pam-backend:latest
           ports:
             - containerPort: 8081
           envFrom:
