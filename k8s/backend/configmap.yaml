@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: iam-pam
+data:
+  # Database
+  DB_URL: jdbc:postgresql://postgres:5432/iam_pam_db
+  DB_USERNAME: postgres
+
+  # Keycloak
+  KEYCLOAK_SERVER_URL: http://keycloak:8080
+  KEYCLOAK_REALM: iam-pam-realm
+  KEYCLOAK_CLIENT_ID: iam-pam-backend
+
+  # Bastion VM (external — 192.168.112.138)
+  BASTION_HOST: "192.168.112.138"
+  BASTION_PORT: "22"
+  BASTION_USER: bastion-agent
+  BASTION_KEY_PATH: /app/secrets/bastion_key
+
+  # guacd runs on the bastion VM
+  GUACD_HOST: "192.168.112.138"
+  GUACD_PORT: "4822"
+
+  # CORS — allow requests from K3s VM IP and from ingress
+  CORS_ALLOWED_ORIGINS: "http://192.168.112.139,http://iam-pam.local"
+
+  # SMTP (disabled by default — set SMTP_USERNAME/PASSWORD to enable)
+  SMTP_HOST: smtp.gmail.com
+  SMTP_PORT: "587"
+  MFA_EMAIL_ENABLED: "false"
+  MFA_EMAIL_FROM: noreply@iam-pam.local
+
+  # Twilio SMS/WhatsApp (disabled by default)
+  TWILIO_SMS_ENABLED: "false"
+  TWILIO_WHATSAPP_ENABLED: "false"

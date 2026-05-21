@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: phpldapadmin
+  namespace: iam-pam
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: phpldapadmin
+  template:
+    metadata:
+      labels:
+        app: phpldapadmin
+    spec:
+      containers:
+        - name: phpldapadmin
+          image: osixia/phpldapadmin:0.9.0
+          ports:
+            - containerPort: 80
+          env:
+            - name: PHPLDAPADMIN_LDAP_HOSTS
+              value: "openldap"
+            - name: PHPLDAPADMIN_HTTPS
+              value: "false"
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"

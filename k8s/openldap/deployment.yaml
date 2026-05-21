@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: openldap
+  namespace: iam-pam
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: openldap
+  template:
+    metadata:
+      labels:
+        app: openldap
+    spec:
+      containers:
+        - name: openldap
+          image: osixia/openldap:1.5.0
+          ports:
+            - containerPort: 389
+            - containerPort: 636
+          env:
+            - name: LDAP_ORGANISATION
+              value: "Bank A"
+            - name: LDAP_DOMAIN
+              value: "bank-a.local"
+            - name: LDAP_ADMIN_PASSWORD
+              value: "Admin1234"
+            - name: LDAP_CONFIG_PASSWORD
+              value: "Admin1234"
+            - name: LDAP_READONLY_USER
+              value: "false"
+            - name: LDAP_RFC2307BIS_SCHEMA
+              value: "false"
+            - name: LDAP_BACKEND
+              value: "mdb"
+            - name: LDAP_TLS
+              value: "false"
+            - name: LDAP_REMOVE_CONFIG_AFTER_SETUP
+              value: "false"
+          volumeMounts:
+            - name: ldap-data
+              mountPath: /var/lib/ldap
+            - name: ldap-config
+              mountPath: /etc/ldap/slapd.d
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "300m"
+      volumes:
+        - name: ldap-data
+          persistentVolumeClaim:
+            claimName: openldap-data-pvc
+        - name: ldap-config
+          persistentVolumeClaim:
+            claimName: openldap-config-pvc

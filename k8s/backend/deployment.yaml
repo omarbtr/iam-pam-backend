@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: iam-pam
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+        - name: wait-for-keycloak
+          image: busybox:1.35
+          command: ['sh', '-c', 'until nc -z keycloak 8080; do echo waiting for keycloak; sleep 5; done']
+      containers:
+        - name: backend
+          image: ${DOCKER_USERNAME}/iam-pam-backend:latest
+          ports:
+            - containerPort: 8081
+          envFrom:
+            - configMapRef:
+                name: backend-config
+          env:
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: DB_PASSWORD
+            - name: KEYCLOAK_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: KEYCLOAK_CLIENT_SECRET
+            - name: RESOURCE_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: RESOURCE_ENCRYPTION_KEY
+            - name: FACE_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: FACE_JWT_SECRET
+          volumeMounts:
+            - name: bastion-key
+              mountPath: /app/secrets
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8081
+            initialDelaySeconds: 60
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 10
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "1000m"
+      volumes:
+        - name: bastion-key
+          secret:
+            secretName: backend-secret
+            items:
+              - key: BASTION_KEY
+                path: bastion_key
+                mode: 0400
