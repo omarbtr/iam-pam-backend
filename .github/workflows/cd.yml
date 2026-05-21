@@ -1,68 +1,35 @@
 name: CD — Deploy to K3s
-
 on:
   push:
     branches: [main]
-
 jobs:
   deploy:
     name: Deploy to K3s VM
     runs-on: ubuntu-latest
-    needs: []
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up kubectl
-        uses: azure/setup-kubectl@v3
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.0
         with:
-          version: "v1.28.0"
-
-      - name: Configure kubeconfig
-        run: |
-          mkdir -p ~/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
-          chmod 600 ~/.kube/config
-
-      - name: Update image tags to current commit
-        run: |
-          sed -i 's|\${DOCKER_USERNAME}|${{ secrets.DOCKER_USERNAME }}|g' k8s/backend/deployment.yaml
-          sed -i 's|\${DOCKER_USERNAME}|${{ secrets.DOCKER_USERNAME }}|g' k8s/frontend/deployment.yaml
-          sed -i 's|:latest|:${{ github.sha }}|g' k8s/backend/deployment.yaml
-          sed -i 's|:latest|:${{ github.sha }}|g' k8s/frontend/deployment.yaml
-
-      - name: Apply namespace and config
-        run: |
-          kubectl apply -f k8s/namespace.yaml
-          kubectl apply -f k8s/ingress.yaml
-
-      - name: Apply PostgreSQL
-        run: |
-          kubectl apply -f k8s/postgresql/
-
-      - name: Apply Keycloak
-        run: |
-          kubectl apply -f k8s/keycloak/
-
-      - name: Apply Backend
-        run: |
-          kubectl apply -f k8s/backend/
-
-      - name: Apply Frontend
-        run: |
-          kubectl apply -f k8s/frontend/
-
-      - name: Apply supporting services
-        run: |
-          kubectl apply -f k8s/openldap/
-          kubectl apply -f k8s/phpldapadmin/
-          kubectl apply -f k8s/pgadmin/
-          kubectl apply -f k8s/redis/
-          kubectl apply -f k8s/bastion/
-
-      - name: Wait for backend rollout
-        run: |
-          kubectl rollout status deployment/backend -n iam-pam --timeout=180s
-
-      - name: Wait for frontend rollout
-        run: |
-          kubectl rollout status deployment/frontend -n iam-pam --timeout=60s
+          host: ${{ secrets.VM_SSH_HOST }}
+          username: ${{ secrets.VM_SSH_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/iam-pam-project || git clone https://github.com/omarbtr/iam-pam-backend.git ~/iam-pam-project
+            cd ~/iam-pam-project
+            git pull origin main
+            export KUBECONFIG=~/.kube/config
+            kubectl apply -f k8s/namespace.yaml
+            kubectl apply -f k8s/ingress.yaml
+            kubectl apply -f k8s/postgresql/
+            kubectl apply -f k8s/keycloak/
+            kubectl apply -f k8s/backend/
+            kubectl apply -f k8s/frontend/
+            kubectl apply -f k8s/openldap/
+            kubectl apply -f k8s/phpldapadmin/
+            kubectl apply -f k8s/pgadmin/
+            kubectl apply -f k8s/redis/
+            kubectl apply -f k8s/bastion/
+            kubectl rollout status deployment/backend -n iam-pam --timeout=180s
+            kubectl rollout status deployment/frontend -n iam-pam --timeout=180s
