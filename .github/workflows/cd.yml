@@ -9,27 +9,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.0
-        with:
-          host: ${{ secrets.VM_SSH_HOST }}
-          username: ${{ secrets.VM_SSH_USER }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cd ~/iam-pam-project || git clone https://github.com/omarbtr/iam-pam-backend.git ~/iam-pam-project
-            cd ~/iam-pam-project
-            git pull origin main
-            export KUBECONFIG=~/.kube/config
-            kubectl apply -f k8s/namespace.yaml
-            kubectl apply -f k8s/ingress.yaml
-            kubectl apply -f k8s/postgresql/
-            kubectl apply -f k8s/keycloak/
-            kubectl apply -f k8s/backend/
-            kubectl apply -f k8s/frontend/
-            kubectl apply -f k8s/openldap/
-            kubectl apply -f k8s/phpldapadmin/
-            kubectl apply -f k8s/pgadmin/
-            kubectl apply -f k8s/redis/
-            kubectl apply -f k8s/bastion/
-            kubectl rollout status deployment/backend -n iam-pam --timeout=180s
-            kubectl rollout status deployment/frontend -n iam-pam --timeout=180s
+      - name: Apply K8s manifests
+        run: |
+          export KUBECONFIG=~/.kube/config
+          kubectl apply -f k8s/namespace.yaml
+          kubectl apply -f k8s/ingress.yaml
+          kubectl apply -f k8s/postgresql/
+          kubectl apply -f k8s/keycloak/
+          kubectl apply -f k8s/backend/
+          kubectl apply -f k8s/frontend/
+          kubectl apply -f k8s/openldap/
+          kubectl apply -f k8s/phpldapadmin/
+          kubectl apply -f k8s/pgadmin/
+          kubectl apply -f k8s/redis/
+          kubectl apply -f k8s/bastion/
+
+      - name: Wait for rollout
+        run: |
+          export KUBECONFIG=~/.kube/config
+          kubectl rollout status deployment/backend -n iam-pam --timeout=180s
+          kubectl rollout status deployment/frontend -n iam-pam --timeout=180s
