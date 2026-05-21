@@ -1,0 +1,464 @@
+<div class="layout-wrap" [class.has-drawer]="selectedTenant !== null">
+
+  <div class="page-container">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Gestion des Tenants</h1>
+        <p class="page-subtitle">{{ filteredTenants.length }} / {{ tenants.length }} tenant(s)</p>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <mat-form-field appearance="outline" class="search-field">
+          <mat-label>Rechercher</mat-label>
+          <mat-icon matPrefix>search</mat-icon>
+          <input matInput [(ngModel)]="searchQuery" placeholder="nom, id, admin...">
+          <button *ngIf="searchQuery" matSuffix mat-icon-button (click)="searchQuery=''">
+            <mat-icon>close</mat-icon>
+          </button>
+        </mat-form-field>
+        <button mat-raised-button color="primary" (click)="openCreate()">
+          <mat-icon>add</mat-icon> Nouveau tenant
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats summary -->
+    <div class="stats-row">
+      <div class="stat-chip">
+        <mat-icon>business</mat-icon>
+        <span><strong>{{ tenants.length }}</strong> tenants</span>
+      </div>
+      <div class="stat-chip stat-chip--active">
+        <mat-icon>check_circle</mat-icon>
+        <span><strong>{{ activeCount }}</strong> actifs</span>
+      </div>
+      <div class="stat-chip stat-chip--inactive" *ngIf="inactiveCount > 0">
+        <mat-icon>block</mat-icon>
+        <span><strong>{{ inactiveCount }}</strong> inactifs</span>
+      </div>
+      <div class="stat-chip stat-chip--users">
+        <mat-icon>people</mat-icon>
+        <span><strong>{{ totalUsers }}</strong> utilisateurs au total</span>
+      </div>
+    </div>
+
+    <!-- Status filters -->
+    <div class="status-filters">
+      <button class="status-filter-btn" [class.active]="statusFilter === 'all'" (click)="statusFilter = 'all'">
+        <mat-icon>apps</mat-icon> Tous <span class="count-badge">{{ tenants.length }}</span>
+      </button>
+      <button class="status-filter-btn" [class.active]="statusFilter === 'active'" (click)="statusFilter = 'active'">
+        <mat-icon>check_circle</mat-icon> Actifs <span class="count-badge">{{ activeCount }}</span>
+      </button>
+      <button class="status-filter-btn" [class.active]="statusFilter === 'inactive'" (click)="statusFilter = 'inactive'">
+        <mat-icon>block</mat-icon> Inactifs <span class="count-badge">{{ inactiveCount }}</span>
+      </button>
+    </div>
+
+    <mat-card style="padding:0;overflow:hidden">
+      <div *ngIf="loading" class="spinner-center"><mat-spinner diameter="36"></mat-spinner></div>
+
+      <table mat-table [dataSource]="filteredTenants" *ngIf="!loading" class="full-width">
+
+        <ng-container matColumnDef="tenantId">
+          <th mat-header-cell *matHeaderCellDef>Identifiant</th>
+          <td mat-cell *matCellDef="let t"><span class="mono cell-id">{{ t.tenantId }}</span></td>
+        </ng-container>
+
+        <ng-container matColumnDef="tenantName">
+          <th mat-header-cell *matHeaderCellDef>Nom</th>
+          <td mat-cell *matCellDef="let t">
+            <div class="tenant-name-cell">
+              <div class="tenant-avatar">{{ t.tenantName[0] | uppercase }}</div>
+              <span class="cell-name">{{ t.tenantName }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="admin">
+          <th mat-header-cell *matHeaderCellDef>Admin</th>
+          <td mat-cell *matCellDef="let t">
+            <div *ngIf="t.adminUsername" class="admin-cell">
+              <mat-icon style="font-size:14px;width:14px;height:14px;color:var(--accent-teal)">admin_panel_settings</mat-icon>
+              <span class="mono cell-admin">{{ t.adminUsername }}</span>
+            </div>
+            <span *ngIf="!t.adminUsername" class="cell-empty">— non assigné</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="domain">
+          <th mat-header-cell *matHeaderCellDef>Domaine</th>
+          <td mat-cell *matCellDef="let t">
+            <span *ngIf="t.domainConfigured" class="domain-tag">
+              <mat-icon style="font-size:12px;width:12px;height:12px">language</mat-icon> {{ t.domain }}
+            </span>
+            <span *ngIf="!t.domainConfigured" class="cell-empty">— non configuré</span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="users">
+          <th mat-header-cell *matHeaderCellDef>Utilisateurs</th>
+          <td mat-cell *matCellDef="let t">
+            <div class="users-cell">
+              <span class="mono users-count"
+                [class.users-warn]="userPercent(t) >= 80"
+                [class.users-full]="userPercent(t) >= 100">
+                {{ t.currentUserCount }} / {{ t.maxUsers }}
+              </span>
+              <div class="mini-bar">
+                <div class="mini-bar-fill"
+                  [style.width.%]="userPercent(t)"
+                  [class.bar-warn]="userPercent(t) >= 80"
+                  [class.bar-full]="userPercent(t) >= 100">
+                </div>
+              </div>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="resources">
+          <th mat-header-cell *matHeaderCellDef>Ressources</th>
+          <td mat-cell *matCellDef="let t">
+            <div class="users-cell" *ngIf="t.maxResources; else unlimitedResCell">
+              <span class="mono users-count"
+                [class.users-warn]="resourcePercent(t) >= 80"
+                [class.users-full]="resourcePercent(t) >= 100">
+                {{ t.currentResources }} / {{ t.maxResources }}
+              </span>
+              <div class="mini-bar">
+                <div class="mini-bar-fill"
+                  [style.width.%]="resourcePercent(t)"
+                  [class.bar-warn]="resourcePercent(t) >= 80"
+                  [class.bar-full]="resourcePercent(t) >= 100">
+                </div>
+              </div>
+            </div>
+            <ng-template #unlimitedResCell>
+              <span class="mono" style="font-size:12px;color:var(--text-secondary)">{{ t.currentResources }} / ∞</span>
+            </ng-template>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="services">
+          <th mat-header-cell *matHeaderCellDef>Services</th>
+          <td mat-cell *matCellDef="let t">
+            <div class="service-pills">
+              <span class="service-pill" *ngFor="let s of t.services">{{ s }}</span>
+              <span *ngIf="!t.services || t.services.length === 0" class="cell-empty">—</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Statut</th>
+          <td mat-cell *matCellDef="let t">
+            <span [class]="'status-badge ' + (t.isActive ? 'status-active' : 'status-rejected')">
+              {{ t.isActive ? 'Actif' : 'Inactif' }}
+            </span>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let t">
+            <div class="actions-cell">
+              <button mat-icon-button (click)="openAssignAdmin(t, $event)" matTooltip="Assigner un admin"
+                      style="color:var(--accent-teal)">
+                <mat-icon>admin_panel_settings</mat-icon>
+              </button>
+              <button mat-icon-button (click)="openEdit(t, $event)" matTooltip="Modifier">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" *ngIf="t.isActive"
+                      (click)="openDeactivateConfirm(t, $event)" matTooltip="Désactiver">
+                <mat-icon>block</mat-icon>
+              </button>
+              <button mat-icon-button *ngIf="!t.isActive"
+                      (click)="activate(t, $event)" matTooltip="Réactiver"
+                      style="color:var(--accent-teal)">
+                <mat-icon>check_circle</mat-icon>
+              </button>
+            </div>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+            class="tenant-row"
+            [class.tenant-row--selected]="selectedTenant?.tenantId === row.tenantId"
+            (click)="selectTenant(row)">
+        </tr>
+      </table>
+
+      <div *ngIf="!loading && filteredTenants.length === 0" class="empty-state">
+        <mat-icon>{{ isFiltering ? 'search_off' : 'business' }}</mat-icon>
+        <p>{{ isFiltering ? 'Aucun tenant pour ces filtres' : 'Aucun tenant enregistré' }}</p>
+        <button mat-stroked-button *ngIf="isFiltering" (click)="clearFilters()">Effacer les filtres</button>
+        <button mat-raised-button color="primary" *ngIf="!isFiltering" (click)="openCreate()">
+          <mat-icon>add</mat-icon> Créer le premier tenant
+        </button>
+      </div>
+    </mat-card>
+  </div>
+
+  <!-- ─── Drawer détail tenant ─── -->
+  <div class="tenant-drawer" *ngIf="selectedTenant" [@drawer]>
+
+    <!-- Header -->
+    <div class="drawer-header">
+      <div class="drawer-avatar">{{ selectedTenant.tenantName[0] | uppercase }}</div>
+      <div class="drawer-title-block">
+        <span class="drawer-name">{{ selectedTenant.tenantName }}</span>
+        <span class="drawer-id mono">{{ selectedTenant.tenantId }}</span>
+      </div>
+      <button mat-icon-button (click)="closeDrawer()" class="drawer-close">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <!-- Status bar -->
+    <div class="drawer-status-bar"
+         [class.drawer-status-bar--active]="selectedTenant.isActive"
+         [class.drawer-status-bar--inactive]="!selectedTenant.isActive">
+      <mat-icon>{{ selectedTenant.isActive ? 'check_circle' : 'block' }}</mat-icon>
+      <span>{{ selectedTenant.isActive ? 'Tenant actif' : 'Tenant inactif' }}</span>
+    </div>
+
+    <div class="drawer-body">
+
+      <!-- Admin section -->
+      <div class="drawer-section">
+        <div class="drawer-section-label">
+          <mat-icon>admin_panel_settings</mat-icon> Administrateur
+        </div>
+        <div *ngIf="selectedTenant.adminUsername" class="drawer-admin-row">
+          <div class="drawer-admin-avatar">{{ selectedTenant.adminUsername[0] | uppercase }}</div>
+          <div>
+            <div class="drawer-admin-name">{{ selectedTenant.adminUsername }}</div>
+            <div class="drawer-admin-role">Tenant Administrator</div>
+          </div>
+        </div>
+        <div *ngIf="!selectedTenant.adminUsername" class="drawer-no-admin">
+          <mat-icon>person_off</mat-icon>
+          <span>Aucun administrateur assigné</span>
+        </div>
+      </div>
+
+      <!-- Domain section -->
+      <div class="drawer-section">
+        <div class="drawer-section-label">
+          <mat-icon>language</mat-icon> Domaine email
+        </div>
+        <div *ngIf="selectedTenant.domainConfigured" class="drawer-domain-tag">
+          <mat-icon>check</mat-icon>
+          <span class="mono">{{ selectedTenant.domain }}</span>
+        </div>
+        <div *ngIf="!selectedTenant.domainConfigured" class="drawer-warn-row">
+          <mat-icon>warning</mat-icon>
+          <span>Domaine non configuré</span>
+        </div>
+      </div>
+
+      <!-- Users section -->
+      <div class="drawer-section">
+        <div class="drawer-section-label">
+          <mat-icon>people</mat-icon> Capacité utilisateurs
+        </div>
+        <div class="drawer-capacity">
+          <div class="drawer-capacity-numbers">
+            <span class="drawer-capacity-current"
+              [class.cap-warn]="userPercent(selectedTenant) >= 80"
+              [class.cap-full]="userPercent(selectedTenant) >= 100">
+              {{ selectedTenant.currentUserCount }}
+            </span>
+            <span class="drawer-capacity-sep"> / </span>
+            <span class="drawer-capacity-max">{{ selectedTenant.maxUsers }}</span>
+            <span class="drawer-capacity-pct"
+              [class.cap-warn]="userPercent(selectedTenant) >= 80"
+              [class.cap-full]="userPercent(selectedTenant) >= 100">
+              ({{ userPercent(selectedTenant) }}%)
+            </span>
+          </div>
+          <div class="drawer-bar">
+            <div class="drawer-bar-fill"
+              [style.width.%]="userPercent(selectedTenant)"
+              [class.bar-warn]="userPercent(selectedTenant) >= 80"
+              [class.bar-full]="userPercent(selectedTenant) >= 100">
+            </div>
+          </div>
+          <div class="drawer-capacity-hint" *ngIf="userPercent(selectedTenant) >= 80">
+            <mat-icon>warning</mat-icon>
+            <span *ngIf="userPercent(selectedTenant) < 100">Quota presque atteint</span>
+            <span *ngIf="userPercent(selectedTenant) >= 100">Quota atteint</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resources section -->
+      <div class="drawer-section">
+        <div class="drawer-section-label" style="display:flex;align-items:center;justify-content:space-between">
+          <span><mat-icon>storage</mat-icon> Capacité ressources</span>
+          <button mat-icon-button (click)="openEditResourceLimit(selectedTenant)" matTooltip="Modifier la limite" style="width:28px;height:28px;line-height:28px">
+            <mat-icon style="font-size:16px">edit</mat-icon>
+          </button>
+        </div>
+        <div class="drawer-capacity" *ngIf="selectedTenant.maxResources; else unlimitedResources">
+          <div class="drawer-capacity-numbers">
+            <span class="drawer-capacity-current"
+              [class.cap-warn]="resourcePercent(selectedTenant) >= 80"
+              [class.cap-full]="resourcePercent(selectedTenant) >= 100">
+              {{ selectedTenant.currentResources }}
+            </span>
+            <span class="drawer-capacity-sep"> / </span>
+            <span class="drawer-capacity-max">{{ selectedTenant.maxResources }}</span>
+            <span class="drawer-capacity-pct"
+              [class.cap-warn]="resourcePercent(selectedTenant) >= 80"
+              [class.cap-full]="resourcePercent(selectedTenant) >= 100">
+              ({{ resourcePercent(selectedTenant) }}%)
+            </span>
+          </div>
+          <div class="drawer-bar">
+            <div class="drawer-bar-fill"
+              [style.width.%]="resourcePercent(selectedTenant)"
+              [class.bar-warn]="resourcePercent(selectedTenant) >= 80"
+              [class.bar-full]="resourcePercent(selectedTenant) >= 100">
+            </div>
+          </div>
+          <div class="drawer-capacity-hint" *ngIf="resourcePercent(selectedTenant) >= 80">
+            <mat-icon>warning</mat-icon>
+            <span *ngIf="resourcePercent(selectedTenant) < 100">Quota ressources presque atteint</span>
+            <span *ngIf="resourcePercent(selectedTenant) >= 100">Quota ressources atteint</span>
+          </div>
+        </div>
+        <ng-template #unlimitedResources>
+          <div class="drawer-capacity">
+            <div class="drawer-capacity-numbers">
+              <span class="drawer-capacity-current">{{ selectedTenant.currentResources }}</span>
+              <span class="drawer-capacity-sep"> ressource(s) — </span>
+              <span style="font-style:italic;opacity:.6">illimité</span>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Services section -->
+      <div class="drawer-section">
+        <div class="drawer-section-label">
+          <mat-icon>apps</mat-icon> Services activés ({{ selectedTenant.services.length }})
+        </div>
+        <div class="drawer-services" *ngIf="selectedTenant.services.length > 0">
+          <div *ngFor="let s of selectedTenant.services" class="drawer-service-item">
+            <mat-icon>{{ s === 'PAM' ? 'lock' : s === 'IAM' ? 'manage_accounts' : s === 'SSO' ? 'vpn_key' : s === 'MFA' ? 'security' : 'fact_check' }}</mat-icon>
+            <span>{{ s }}</span>
+          </div>
+        </div>
+        <div *ngIf="selectedTenant.services.length === 0" class="drawer-empty-hint">
+          Aucun service activé
+        </div>
+      </div>
+
+      <!-- Dates section -->
+      <div class="drawer-section">
+        <div class="drawer-section-label">
+          <mat-icon>schedule</mat-icon> Historique
+        </div>
+        <div class="drawer-dates">
+          <div class="drawer-date-row">
+            <span class="drawer-date-label">Créé le</span>
+            <span class="drawer-date-value mono">{{ selectedTenant.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+          <div class="drawer-date-row">
+            <span class="drawer-date-label">Mis à jour</span>
+            <span class="drawer-date-value mono">{{ selectedTenant.updatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Actions footer -->
+    <div class="drawer-footer">
+      <button mat-stroked-button (click)="openAssignAdmin(selectedTenant)" style="flex:1">
+        <mat-icon>admin_panel_settings</mat-icon> Admin
+      </button>
+      <button mat-stroked-button (click)="openEdit(selectedTenant)" style="flex:1">
+        <mat-icon>edit</mat-icon> Modifier
+      </button>
+      <button mat-stroked-button color="warn" *ngIf="selectedTenant.isActive"
+              (click)="openDeactivateConfirm(selectedTenant)" style="flex:1">
+        <mat-icon>block</mat-icon> Désactiver
+      </button>
+      <button mat-raised-button color="primary" *ngIf="!selectedTenant.isActive"
+              (click)="activate(selectedTenant)" style="flex:1">
+        <mat-icon>check_circle</mat-icon> Réactiver
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<!-- Backdrop -->
+<div class="drawer-backdrop" *ngIf="selectedTenant" (click)="closeDrawer()"></div>
+
+<!-- Panel: Assigner admin -->
+<div class="action-panel" *ngIf="assigningTenant !== null">
+  <div class="action-panel-header">
+    <mat-icon style="color:var(--accent-teal)">admin_panel_settings</mat-icon>
+    <span>Assigner un admin — <strong>{{ assigningTenant.tenantName }}</strong></span>
+  </div>
+  <p class="action-panel-hint" *ngIf="assigningTenant.adminUsername">
+    Admin actuel : <code>{{ assigningTenant.adminUsername }}</code>
+  </p>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Nom d'utilisateur Keycloak</mat-label>
+    <mat-icon matPrefix>person</mat-icon>
+    <input matInput [(ngModel)]="assignUsername" placeholder="ex: tenant-admin1" (keyup.enter)="confirmAssign()">
+  </mat-form-field>
+  <div class="action-panel-actions">
+    <button mat-stroked-button (click)="cancelAssign()">Annuler</button>
+    <button mat-raised-button color="primary" (click)="confirmAssign()" [disabled]="!assignUsername.trim()">
+      <mat-icon>check</mat-icon> Assigner
+    </button>
+  </div>
+</div>
+
+<!-- Panel: Modifier limite ressources -->
+<div class="action-panel" *ngIf="editingResourceLimitTenant !== null">
+  <div class="action-panel-header">
+    <mat-icon style="color:var(--accent-teal)">storage</mat-icon>
+    <span>Limite ressources — <strong>{{ editingResourceLimitTenant.tenantName }}</strong></span>
+  </div>
+  <p class="action-panel-hint">
+    Actuellement : <strong>{{ editingResourceLimitTenant.currentResources }}</strong> ressource(s) active(s).
+    Laisser vide pour illimité.
+  </p>
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Nombre max de ressources</mat-label>
+    <mat-icon matPrefix>storage</mat-icon>
+    <input matInput type="number" min="1" [(ngModel)]="resourceLimitInput"
+           placeholder="ex: 10 (vide = illimité)" (keyup.enter)="confirmEditResourceLimit()">
+  </mat-form-field>
+  <div class="action-panel-actions">
+    <button mat-stroked-button (click)="cancelEditResourceLimit()">Annuler</button>
+    <button mat-raised-button color="primary" (click)="confirmEditResourceLimit()">
+      <mat-icon>check</mat-icon> Appliquer
+    </button>
+  </div>
+</div>
+
+<!-- Panel: Confirmer désactivation -->
+<div class="action-panel action-panel--danger" *ngIf="confirmingTenant !== null">
+  <div class="action-panel-header">
+    <mat-icon color="warn">warning</mat-icon>
+    <span>Désactiver <strong>{{ confirmingTenant.tenantName }}</strong> ?</span>
+  </div>
+  <p class="action-panel-hint">
+    Tous les utilisateurs perdront l'accès.
+    <strong>{{ confirmingTenant.currentUserCount }}</strong> utilisateur(s) affecté(s).
+  </p>
+  <div class="action-panel-actions">
+    <button mat-stroked-button (click)="cancelConfirm()">Annuler</button>
+    <button mat-raised-button color="warn" (click)="confirmDeactivate()">
+      <mat-icon>block</mat-icon> Désactiver
+    </button>
+  </div>
+</div>

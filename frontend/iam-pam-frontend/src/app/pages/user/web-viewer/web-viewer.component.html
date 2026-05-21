@@ -1,0 +1,50 @@
+<div class="web-page">
+
+  <!-- Top bar -->
+  <div class="web-topbar">
+    <div class="web-title">
+      <mat-icon>language</mat-icon>
+      <span>{{ resourceName }}</span>
+      <span class="session-id">#{{ requestId }}</span>
+    </div>
+
+    <div class="web-status">
+      <span class="status-dot"
+        [class.dot--loading]="loading"
+        [class.dot--ready]="ready"
+        [class.dot--error]="!!error">
+      </span>
+      <span *ngIf="loading">Ouverture de la session...</span>
+      <span *ngIf="ready && !loading">Connecté</span>
+      <span *ngIf="!loading && !ready && !error">Déconnecté</span>
+      <span *ngIf="error" class="error-text">{{ error }}</span>
+    </div>
+
+    <button mat-stroked-button class="disconnect-btn" (click)="disconnect()">
+      <mat-icon>power_settings_new</mat-icon>
+      Terminer
+    </button>
+  </div>
+
+  <!-- Web content area -->
+  <div class="web-wrap">
+    <div *ngIf="loading" class="web-loading">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Ouverture de la session Web...</span>
+    </div>
+
+    <div *ngIf="error && !loading" class="web-error">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error }}</span>
+    </div>
+
+    <iframe
+      *ngIf="iframeSrc && !error"
+      [src]="iframeSrc"
+      class="web-iframe"
+      allowfullscreen
+      sandbox="allow-forms allow-scripts allow-same-origin allow-popups allow-modals">
+    </iframe>
+  </div>
+
+</div>

@@ -1,0 +1,109 @@
+# Unité organisationnelle pour les utilisateurs
+dn: ou=users,dc=bank-a,dc=local
+objectClass: organizationalUnit
+ou: users
+
+# Utilisateur 1 — Ahmed Benali
+dn: uid=abenali,ou=users,dc=bank-a,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: abenali
+sn: Benali
+givenName: Ahmed
+cn: Ahmed Benali
+mail: ahmed.benali@bank-a.local
+uidNumber: 1001
+gidNumber: 1001
+homeDirectory: /home/abenali
+userPassword: {SSHA}Test1234
+
+# Utilisateur 2 — Sara Mansouri
+dn: uid=smansouri,ou=users,dc=bank-a,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: smansouri
+sn: Mansouri
+givenName: Sara
+cn: Sara Mansouri
+mail: sara.mansouri@bank-a.local
+uidNumber: 1002
+gidNumber: 1002
+homeDirectory: /home/smansouri
+userPassword: {SSHA}Test1234
+
+# Utilisateur 3 — Karim Trabelsi
+dn: uid=ktrabelsi,ou=users,dc=bank-a,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: ktrabelsi
+sn: Trabelsi
+givenName: Karim
+cn: Karim Trabelsi
+mail: karim.trabelsi@bank-a.local
+uidNumber: 1003
+gidNumber: 1003
+homeDirectory: /home/ktrabelsi
+userPassword: {SSHA}Test1234
+
+# Utilisateur 4 — Nour Hamdi
+dn: uid=nhamdi,ou=users,dc=bank-a,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: nhamdi
+sn: Hamdi
+givenName: Nour
+cn: Nour Hamdi
+mail: nour.hamdi@bank-a.local
+uidNumber: 1004
+gidNumber: 1004
+homeDirectory: /home/nhamdi
+userPassword: {SSHA}Test1234
+
+# Utilisateur 5 — Yassine Dridi
+dn: uid=ydridi,ou=users,dc=bank-a,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: ydridi
+sn: Dridi
+givenName: Yassine
+cn: Yassine Dridi
+mail: yassine.dridi@bank-a.local
+uidNumber: 1005
+gidNumber: 1005
+homeDirectory: /home/ydridi
+userPassword: {SSHA}Test1234
+
+# Utilisateur 6 — Omar Bentahar
+dn: uid=omar.bentahar,ou=users,dc=bank-a,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: omar.bentahar
+sn: Bentahar
+givenName: Omar
+cn: Omar Bentahar
+mail: omar4bentahar@gmail.com
+uidNumber: 1006
+gidNumber: 1006
+homeDirectory: /home/omar.bentahar
+userPassword: {SSHA}omar.btr
+
+# Utilisateur 7 — Omar Mltraduction
+dn: uid=omar.mltraduction,ou=users,dc=bank-a,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: omar.mltraduction
+sn: Mltraduction
+givenName: Omar
+cn: Omar Mltraduction
+mail: omarmltraduction@gmail.com
+uidNumber: 1007
+gidNumber: 1007
+homeDirectory: /home/omar.mltraduction
+userPassword: {SSHA}omar.btr

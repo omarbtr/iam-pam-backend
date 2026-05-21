@@ -1,0 +1,80 @@
+<div class="app-shell">
+
+  <!-- ── SIDEBAR ──────────────────────────────────────────────────── -->
+  <aside class="sidebar">
+
+    <div class="sidebar-logo">
+      <div class="logo-icon">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <path d="M14 2L3 7v8c0 6.08 4.72 11.76 11 13 6.28-1.24 11-6.92 11-13V7L14 2Z" fill="none" stroke="#e8a020" stroke-width="1.8"/>
+          <path d="M14 6L6 10v6c0 4.2 3.26 8.12 8 9.24C18.74 24.12 22 20.2 22 16v-6L14 6Z" fill="rgba(232,160,32,0.12)" stroke="#e8a020" stroke-width="1.2"/>
+          <path d="M10 14l3 3 5-5" stroke="#e8a020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="logo-text">
+        <span class="logo-main">IAM·PAM</span>
+        <span class="logo-sub">Access Control</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section-label">Navigation</div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item"
+         *ngFor="let item of visibleNavItems; let i = index"
+         [routerLink]="item.route"
+         routerLinkActive="nav-item--active"
+         [style.animation-delay]="(i * 0.05) + 's'">
+        <span class="nav-icon">
+          <mat-icon>{{ item.icon }}</mat-icon>
+        </span>
+        <span class="nav-label">{{ item.label }}</span>
+        <span class="nav-arrow">›</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-spacer"></div>
+
+    <div class="sidebar-user" [routerLink]="['/profile']" style="cursor:pointer" title="Mon profil">
+      <div class="user-avatar">{{ auth.username.charAt(0).toUpperCase() }}</div>
+      <div class="user-details">
+        <span class="user-name">{{ auth.username }}</span>
+        <span class="user-role">{{ auth.roles[0] }}</span>
+      </div>
+      <button class="logout-btn" (click)="logout(); $event.stopPropagation()" title="Déconnexion">
+        <mat-icon>logout</mat-icon>
+      </button>
+    </div>
+
+  </aside>
+
+  <!-- ── MAIN CONTENT ──────────────────────────────────────────────── -->
+  <main class="main-area">
+
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="breadcrumb">
+          <span class="breadcrumb-root">IAM-PAM</span>
+          <span class="breadcrumb-sep">/</span>
+          <span class="breadcrumb-current">{{ currentPageLabel }}</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="role-tags">
+          <span class="role-tag" *ngFor="let role of auth.roles | slice:0:3">{{ role }}</span>
+        </div>
+        <div class="topbar-divider"></div>
+        <div class="topbar-status">
+          <span class="status-dot"></span>
+          <span class="status-text">Connecté</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area">
+      <router-outlet></router-outlet>
+    </div>
+
+  </main>
+
+</div>

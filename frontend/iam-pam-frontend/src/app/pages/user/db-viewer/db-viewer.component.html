@@ -1,0 +1,168 @@
+<div class="db-page">
+
+  <!-- Top bar -->
+  <div class="db-topbar">
+    <div class="db-title">
+      <mat-icon class="db-icon">storage</mat-icon>
+      <span>{{ resourceName }}</span>
+      <span class="db-type-badge">{{ dbTypeLabel() }}</span>
+      <span *ngIf="dbName" class="db-name-badge">{{ dbName }}</span>
+    </div>
+
+    <div class="db-status">
+      <span class="status-dot"
+        [class.dot--loading]="loading"
+        [class.dot--ready]="connected && !loading"
+        [class.dot--error]="!!error">
+      </span>
+      <span *ngIf="loading">Ouverture du tunnel...</span>
+      <span *ngIf="connected && !loading">Tunnel actif</span>
+      <span *ngIf="!loading && !connected && !error">Déconnecté</span>
+      <span *ngIf="error" class="error-text">{{ error }}</span>
+    </div>
+
+    <button mat-stroked-button class="disconnect-btn" (click)="disconnect()">
+      <mat-icon>power_settings_new</mat-icon>
+      Terminer
+    </button>
+  </div>
+
+  <!-- Loading / Error state -->
+  <div *ngIf="loading" class="db-center">
+    <mat-spinner diameter="40"></mat-spinner>
+    <span>Établissement du tunnel SSH...</span>
+  </div>
+
+  <div *ngIf="error && !loading" class="db-center db-center--error">
+    <mat-icon>error_outline</mat-icon>
+    <span>{{ error }}</span>
+    <button mat-stroked-button (click)="disconnect()">Retour</button>
+  </div>
+
+  <!-- Main workspace -->
+  <div class="db-workspace" *ngIf="connected && !loading">
+
+    <!-- Left: Schema browser -->
+    <div class="db-sidebar">
+      <div class="sidebar-header">
+        <mat-icon>account_tree</mat-icon>
+        <span>Schémas</span>
+        <button mat-icon-button class="refresh-btn" (click)="loadSchema()"
+                [disabled]="schemaLoading" matTooltip="Actualiser">
+          <mat-icon>refresh</mat-icon>
+        </button>
+      </div>
+
+      <div *ngIf="schemaLoading" class="schema-loading">
+        <mat-spinner diameter="20"></mat-spinner>
+      </div>
+
+      <div *ngIf="!schemaLoading && schemas.length === 0" class="schema-empty">
+        Aucun schéma trouvé
+      </div>
+
+      <div *ngFor="let schema of schemas" class="schema-item">
+        <div class="schema-name" (click)="toggleSchema(schema)">
+          <mat-icon class="expand-icon">{{ schema.expanded ? 'expand_more' : 'chevron_right' }}</mat-icon>
+          <mat-icon class="type-icon">folder</mat-icon>
+          {{ schema.name }}
+        </div>
+
+        <div *ngIf="schema.expanded" class="table-list">
+          <div *ngFor="let table of schema.tables" class="table-item"
+               (click)="insertSql('SELECT * FROM ' + table.name + ' LIMIT 50;')"
+               matTooltip="Cliquer pour sélectionner">
+            <mat-icon>table_chart</mat-icon>
+            <span>{{ table.name }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right: Query + Results -->
+    <div class="db-main">
+
+      <!-- SQL Editor -->
+      <div class="query-panel">
+        <div class="query-label">
+          <mat-icon>code</mat-icon>
+          Requête SQL
+        </div>
+        <textarea
+          class="sql-editor"
+          [(ngModel)]="sql"
+          placeholder="SELECT * FROM ..."
+          (keydown.control.enter)="runQuery()"
+          spellcheck="false"
+          rows="5">
+        </textarea>
+        <div class="query-toolbar">
+          <span class="hint">Ctrl+Enter pour exécuter</span>
+          <button mat-raised-button class="run-btn"
+                  (click)="runQuery()"
+                  [disabled]="running || !sql.trim()">
+            <mat-icon>{{ running ? 'hourglass_empty' : 'play_arrow' }}</mat-icon>
+            {{ running ? 'Exécution...' : 'Exécuter' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Results area -->
+      <div class="results-panel">
+
+        <!-- Query error -->
+        <div *ngIf="queryError" class="result-error">
+          <mat-icon>error</mat-icon>
+          {{ queryError }}
+        </div>
+
+        <!-- No result yet -->
+        <div *ngIf="!result && !queryError && !running" class="result-empty">
+          <mat-icon>table_view</mat-icon>
+          <span>Les résultats s'afficheront ici</span>
+        </div>
+
+        <!-- Running spinner -->
+        <div *ngIf="running" class="result-running">
+          <mat-spinner diameter="24"></mat-spinner>
+          <span>Exécution en cours...</span>
+        </div>
+
+        <!-- SELECT results -->
+        <div *ngIf="result && result.type === 'SELECT' && !running">
+          <div class="result-meta">
+            <span class="result-count">{{ result.rowCount }} ligne(s)</span>
+            <span class="result-time">{{ result.executionMs }} ms</span>
+          </div>
+          <div class="result-table-wrap">
+            <table class="result-table">
+              <thead>
+                <tr>
+                  <th *ngFor="let col of displayColumns">{{ col }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of displayRows">
+                  <td *ngFor="let cell of row">{{ cell ?? 'NULL' }}</td>
+                </tr>
+                <tr *ngIf="displayRows.length === 0">
+                  <td [attr.colspan]="displayColumns.length" class="no-data">
+                    Aucune donnée
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- DML result -->
+        <div *ngIf="result && result.type === 'UPDATE' && !running" class="result-dml">
+          <mat-icon>check_circle</mat-icon>
+          <span>{{ result.rowsAffected }} ligne(s) affectée(s) — {{ result.executionMs }} ms</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,16 @@
+# LDIF — Create Omar Bentahar in OpenLDAP / Samba AD
+# Usage:  ldapadd -x -H ldap://localhost -D "cn=admin,dc=iam-pam,dc=local" -W -f create-ad-user-omar.ldif
+# Adjust the DN suffix (dc=iam-pam,dc=local) to match your domain.
+
+dn: cn=Omar Bentahar,ou=Users,dc=iam-pam,dc=local
+objectClass: top
+objectClass: person
+objectClass: organizationalPerson
+objectClass: inetOrgPerson
+cn: Omar Bentahar
+sn: Bentahar
+givenName: Omar
+uid: omar.bentahar
+mail: omar4bentahar@gmail.com
+userPassword: {SSHA}omar.btr
+displayName: Omar Bentahar

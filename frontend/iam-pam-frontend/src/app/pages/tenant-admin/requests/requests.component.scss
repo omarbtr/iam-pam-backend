@@ -1,0 +1,92 @@
+.page-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+}
+
+.search-field { width: 280px; }
+
+.pending-alert {
+  display: inline-block; margin-left: 8px;
+  background: rgba(232,160,32,0.15); color: #b45309;
+  border: 1px solid rgba(232,160,32,0.3);
+  padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
+}
+
+// Filtres statut
+.status-filters {
+  display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap;
+}
+
+.status-filter-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--surface);
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  transition: all 0.15s; color: var(--text-secondary);
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  .count-badge {
+    background: var(--border); padding: 1px 6px;
+    border-radius: 10px; font-size: 10px; font-weight: 700;
+  }
+  &:hover { border-color: var(--accent-teal); color: var(--accent-teal); }
+  &.active {
+    background: var(--accent-teal); color: #fff; border-color: var(--accent-teal);
+    .count-badge { background: rgba(255,255,255,0.25); }
+  }
+}
+
+// Table
+.full-width { width: 100%; }
+.user-cell { display: flex; align-items: center; gap: 8px; }
+.user-avatar-sm {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--sidebar-bg), #1a3a5c);
+  color: var(--accent-amber);
+  font-family: 'Syne', sans-serif; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.resource-tag {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  background: rgba(0,196,160,0.08); color: var(--accent-teal);
+  border: 1px solid rgba(0,196,160,0.2); padding: 2px 8px; border-radius: 4px;
+}
+.duration-tag {
+  font-family: 'DM Mono', monospace; font-size: 11px; font-weight: 600;
+  color: var(--text-secondary);
+}
+.justif-cell {
+  max-width: 200px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  font-size: 12px; color: var(--text-secondary);
+}
+.date-cell { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-tertiary); }
+.review-comment {
+  display: flex; align-items: center; gap: 2px;
+  font-size: 10px; color: var(--text-tertiary); font-style: italic; margin-top: 3px;
+}
+.btn-approve { color: #00c4a0 !important; }
+.req-row { transition: background 0.1s; &:hover { background: rgba(0,196,160,0.02); } }
+
+// Review panel
+.review-panel {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 380px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+  padding: 20px; z-index: 100;
+}
+.review-panel-header {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 16px;
+  font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
+  color: var(--text-primary);
+  mat-icon { font-size: 20px; }
+}
+.review-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+
+.spinner-center { display: flex; justify-content: center; padding: 40px; }
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px; gap: 8px; color: var(--text-tertiary);
+  mat-icon { font-size: 48px; width: 48px; height: 48px; }
+}

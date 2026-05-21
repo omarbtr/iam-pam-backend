@@ -1,0 +1,74 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mon profil</h1>
+      <p class="page-subtitle">Informations de votre compte</p>
+    </div>
+  </div>
+
+  <div class="profile-grid">
+    <!-- Carte identité -->
+    <mat-card class="identity-card">
+      <div class="avatar-large">{{ getInitials() }}</div>
+      <h2 class="profile-name">{{ auth.displayName }}</h2>
+      <p class="profile-username">@{{ auth.username }}</p>
+      <p class="profile-email" *ngIf="auth.email">
+        <mat-icon>email</mat-icon> {{ auth.email }}
+      </p>
+      <div class="roles-section">
+        <span *ngFor="let r of auth.roles" [class]="'role-pill ' + getRoleBadgeClass(r)">{{ r }}</span>
+      </div>
+    </mat-card>
+
+    <!-- Infos tenant (si tenant-admin) -->
+    <mat-card class="tenant-card" *ngIf="myTenant">
+      <div class="info-card-header">
+        <mat-icon>business</mat-icon>
+        <span>Mon tenant</span>
+      </div>
+      <div class="info-rows">
+        <div class="info-row">
+          <span class="label">Tenant ID</span>
+          <span class="value mono">{{ myTenant.tenantId }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Nom</span>
+          <span class="value">{{ myTenant.tenantName }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Domaine</span>
+          <span class="value mono">{{ myTenant.domain || '—' }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Utilisateurs</span>
+          <span class="value">{{ myTenant.currentUserCount }} / {{ myTenant.maxUsers }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">Statut</span>
+          <span [class]="'status-badge ' + (myTenant.isActive ? 'status-approved' : 'status-rejected')">
+            {{ myTenant.isActive ? 'Actif' : 'Inactif' }}
+          </span>
+        </div>
+        <div class="info-row" *ngIf="myTenant.services?.length">
+          <span class="label">Services</span>
+          <div class="services-list">
+            <span *ngFor="let s of myTenant.services" class="service-pill">{{ s }}</span>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Actions compte -->
+    <mat-card class="actions-card">
+      <div class="info-card-header">
+        <mat-icon>manage_accounts</mat-icon>
+        <span>Actions</span>
+      </div>
+      <div class="action-buttons">
+        <button mat-stroked-button (click)="auth.logout()" class="logout-btn">
+          <mat-icon>logout</mat-icon> Se déconnecter
+        </button>
+      </div>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,129 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Sessions PAM actives</h1>
+      <p class="page-subtitle" *ngIf="!loading">
+        {{ sessions.length === 0 ? 'Aucune session en cours' : sessions.length + ' session(s) en cours' }}
+      </p>
+    </div>
+    <button mat-stroked-button (click)="load()" [disabled]="loading">
+      <mat-icon>refresh</mat-icon> Actualiser
+    </button>
+  </div>
+
+  <!-- Spinner -->
+  <div class="spinner-wrap" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state" *ngIf="!loading && sessions.length === 0">
+    <div class="empty-icon"><mat-icon>verified_user</mat-icon></div>
+    <h3>Aucune session active</h3>
+    <p>Vos accès PAM approuvés et en cours apparaîtront ici.</p>
+  </div>
+
+  <!-- Sessions list -->
+  <div class="sessions-grid" *ngIf="!loading && sessions.length > 0">
+    <div *ngFor="let s of sessions" class="session-card"
+         [class.session-card--critical]="remaining(s).critical">
+
+      <!-- Header -->
+      <div class="session-header">
+        <div class="type-icon" [style.background]="typeColor(s.resourceType ?? '') + '20'">
+          <mat-icon [style.color]="typeColor(s.resourceType ?? '')">{{ typeIcon(s.resourceType ?? '') }}</mat-icon>
+        </div>
+        <div class="session-title">
+          <strong>{{ s.resourceName }}</strong>
+          <span class="type-badge" [style.color]="typeColor(s.resourceType ?? '')">{{ s.resourceType ?? '—' }}</span>
+        </div>
+        <div class="session-status-dot" [class.dot--critical]="remaining(s).critical"></div>
+      </div>
+
+      <!-- Countdown bar / permanent badge -->
+      <div class="countdown-wrap" *ngIf="!isIndefinite(s)">
+        <div class="countdown-bar" *ngIf="!remaining(s).notStarted">
+          <div class="countdown-fill"
+               [style.width.%]="remaining(s).pct"
+               [class.fill--warn]="remaining(s).pct < 30"
+               [class.fill--critical]="remaining(s).critical">
+          </div>
+        </div>
+        <div class="countdown-label" [class.label--critical]="remaining(s).critical"
+             [class.label--notstarted]="remaining(s).notStarted">
+          <mat-icon *ngIf="remaining(s).critical">warning</mat-icon>
+          <mat-icon *ngIf="remaining(s).notStarted">hourglass_empty</mat-icon>
+          {{ remaining(s).label }}
+        </div>
+        <div class="notstarted-hint" *ngIf="remaining(s).notStarted">
+          Le timer démarrera lors de la première connexion
+        </div>
+      </div>
+      <div class="permanent-wrap" *ngIf="isIndefinite(s)">
+        <mat-icon>all_inclusive</mat-icon>
+        <span>Accès permanent — révocable par l'administrateur</span>
+      </div>
+
+      <!-- Meta -->
+      <div class="session-meta">
+        <div class="meta-row" *ngIf="s.expiresAt">
+          <mat-icon>schedule</mat-icon>
+          <span>Expire à {{ s.expiresAt | date:'HH:mm:ss dd/MM' }}</span>
+        </div>
+        <div class="meta-row" *ngIf="!s.expiresAt && !s.durationHours">
+          <mat-icon>all_inclusive</mat-icon>
+          <span>Durée indéterminée</span>
+        </div>
+        <div class="meta-row" *ngIf="s.firstAccessAt">
+          <mat-icon>play_circle</mat-icon>
+          <span>Premier accès {{ s.firstAccessAt | date:'HH:mm dd/MM' }}</span>
+        </div>
+        <div class="meta-row">
+          <mat-icon>timelapse</mat-icon>
+          <span>Durée : {{ s.durationHours ? s.durationHours + 'h' : '∞' }}</span>
+        </div>
+        <div class="meta-row" *ngIf="s.justification">
+          <mat-icon>comment</mat-icon>
+          <span>{{ s.justification }}</span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="session-footer">
+        <button mat-raised-button class="connect-btn"
+                *ngIf="s.resourceType === 'SSH'"
+                (click)="openSession(s)">
+          <mat-icon>terminal</mat-icon>
+          Ouvrir terminal
+        </button>
+        <button mat-raised-button class="connect-btn rdp-btn"
+                *ngIf="s.resourceType === 'RDP'"
+                (click)="openSession(s)">
+          <mat-icon>desktop_windows</mat-icon>
+          Ouvrir bureau
+        </button>
+        <button mat-raised-button class="connect-btn web-btn"
+                *ngIf="s.resourceType === 'WEB'"
+                (click)="openSession(s)">
+          <mat-icon>language</mat-icon>
+          Ouvrir
+        </button>
+        <button mat-raised-button class="connect-btn db-btn"
+                *ngIf="s.resourceType === 'DATABASE'"
+                (click)="openSession(s)">
+          <mat-icon>storage</mat-icon>
+          Console DB
+        </button>
+        <button mat-raised-button class="terminate-btn"
+                (click)="terminate(s)"
+                [disabled]="terminating === s.id">
+          <mat-icon>{{ terminating === s.id ? 'hourglass_empty' : 'stop_circle' }}</mat-icon>
+          {{ terminating === s.id ? 'Terminaison...' : 'Terminer' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>

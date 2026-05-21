@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Connexion — ESPRIT Corp Intranet</title>
+<link rel="stylesheet" href="/styles.css">
+<style>
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  .login-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 16px;
+    background: #f0f2f5;
+  }
+  .login-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+  }
+  .login-logo {
+    text-align: center;
+    margin-bottom: 6px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #0f172a;
+  }
+  .login-logo span { color: #38bdf8; }
+  .login-subtitle {
+    text-align: center;
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 32px;
+  }
+  .form-group { margin-bottom: 18px; }
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .form-control {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #1e293b;
+    background: #fff;
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+    font-family: inherit;
+  }
+  .form-control:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+  }
+  /* PAM auto-login target button — id="login-btn" */
+  #login-btn {
+    width: 100%;
+    padding: 11px;
+    background: #1d4ed8;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+    transition: background .15s;
+    font-family: inherit;
+  }
+  #login-btn:hover { background: #1e40af; }
+  .error-msg {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #dc2626;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 13px;
+    margin-bottom: 18px;
+  }
+  .login-footer {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 11px;
+    color: #94a3b8;
+  }
+  .divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 24px 0 20px;
+  }
+  .security-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #15803d;
+    margin-bottom: 20px;
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">ESPRIT<span>Corp</span></div>
+  <div class="topbar-badge">Réseau Interne</div>
+</div>
+
+<div class="login-wrap">
+  <div class="login-card">
+    <div class="login-logo">ESPRIT<span>Corp</span></div>
+    <div class="login-subtitle">Intranet d'entreprise — Accès restreint aux employés</div>
+
+    <div class="security-note">
+      🔒 Connexion sécurisée — Réseau interne ESPRIT Corp
+    </div>
+
+    <!-- Error message shown on failed login -->
+    <script>
+      if (new URLSearchParams(location.search).get('error')) {
+        document.addEventListener('DOMContentLoaded', function() {
+          var err = document.getElementById('error-msg');
+          if (err) err.style.display = 'flex';
+        });
+      }
+    </script>
+    <div id="error-msg" class="error-msg" style="display:none">
+      ⚠️ Identifiant ou mot de passe incorrect. Veuillez réessayer.
+    </div>
+
+    <!-- PAM auto-login selectors: #username, #password, #login-btn -->
+    <form method="POST" action="/login">
+      <div class="form-group">
+        <label class="form-label" for="username">Identifiant</label>
+        <input class="form-control" type="text" id="username" name="username"
+               placeholder="Votre identifiant" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Mot de passe</label>
+        <input class="form-control" type="password" id="password" name="password"
+               placeholder="••••••••" autocomplete="current-password" required>
+      </div>
+      <button type="submit" id="login-btn">Se connecter →</button>
+    </form>
+
+    <div class="login-footer">
+      © 2025 ESPRIT Corp — Accès réservé aux employés autorisés.<br>
+      Toute utilisation non autorisée sera enregistrée et signalée.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

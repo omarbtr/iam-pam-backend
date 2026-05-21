@@ -1,0 +1,145 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Annuaire Active Directory</h1>
+      <p class="page-subtitle">Connexion à votre AD pour l'import d'utilisateurs</p>
+    </div>
+    <div class="status-pill" *ngIf="currentConfig" [class.status-ok]="connectionStatus === 'ok'" [class.status-fail]="connectionStatus === 'fail'">
+      <mat-icon>{{ connectionStatus === 'ok' ? 'check_circle' : connectionStatus === 'fail' ? 'error' : 'settings_ethernet' }}</mat-icon>
+      {{ connectionStatus === 'ok' ? 'Connecté' : connectionStatus === 'fail' ? 'Erreur' : 'Configuré' }}
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="spinner-center"><mat-spinner diameter="36"></mat-spinner></div>
+
+  <form [formGroup]="form" *ngIf="!loading" class="form-layout">
+
+    <!-- Preset rapide -->
+    <div class="preset-bar">
+      <span class="preset-label">Preset rapide :</span>
+      <button mat-stroked-button type="button" (click)="applyPreset('openldap')" class="preset-btn preset-btn--ldap">
+        <mat-icon>storage</mat-icon> OpenLDAP
+      </button>
+      <button mat-stroked-button type="button" (click)="applyPreset('ad')" class="preset-btn preset-btn--ad">
+        <mat-icon>business</mat-icon> Active Directory
+      </button>
+    </div>
+
+    <!-- Connexion -->
+    <mat-card class="config-section">
+      <div class="section-header">
+        <mat-icon>dns</mat-icon>
+        <span>Paramètres de connexion</span>
+      </div>
+      <div class="section-body">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="flex-3">
+            <mat-label>Adresse du serveur LDAP/AD</mat-label>
+            <input matInput formControlName="serverUrl" placeholder="192.168.1.10 ou ldap.company.com">
+            <mat-error *ngIf="form.get('serverUrl')?.hasError('required')">Requis</mat-error>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Port</mat-label>
+            <input matInput type="number" formControlName="port">
+          </mat-form-field>
+          <div class="ssl-toggle">
+            <mat-slide-toggle formControlName="useSsl" color="primary">LDAPS</mat-slide-toggle>
+          </div>
+        </div>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Bind DN</mat-label>
+            <input matInput formControlName="bindDn" placeholder="cn=admin,dc=company,dc=com">
+            <mat-hint>Compte de service pour la liaison</mat-hint>
+            <mat-error *ngIf="form.get('bindDn')?.hasError('required')">Requis</mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Mot de passe du compte de service</mat-label>
+            <input matInput [type]="showPassword ? 'text' : 'password'" formControlName="bindPassword">
+            <button mat-icon-button matSuffix type="button" (click)="showPassword = !showPassword">
+              <mat-icon>{{ showPassword ? 'visibility_off' : 'visibility' }}</mat-icon>
+            </button>
+            <mat-hint *ngIf="currentConfig">Laisser vide pour conserver le mot de passe actuel</mat-hint>
+            <mat-error *ngIf="form.get('bindPassword')?.hasError('required')">Requis</mat-error>
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Recherche -->
+    <mat-card class="config-section">
+      <div class="section-header">
+        <mat-icon>search</mat-icon>
+        <span>Paramètres de recherche</span>
+      </div>
+      <div class="section-body">
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Base de recherche (Base DN)</mat-label>
+            <input matInput formControlName="userSearchBase" placeholder="ou=users,dc=company,dc=com">
+            <mat-hint>Chemin LDAP où chercher les utilisateurs</mat-hint>
+            <mat-error *ngIf="form.get('userSearchBase')?.hasError('required')">Requis</mat-error>
+          </mat-form-field>
+        </div>
+        <div class="form-row">
+          <mat-form-field appearance="outline" class="flex-1">
+            <mat-label>Filtre de recherche LDAP</mat-label>
+            <input matInput formControlName="userSearchFilter" placeholder="(|(uid=*{0}*)(cn=*{0}*)(mail=*{0}*))">
+            <mat-hint>&#123;0&#125; = terme recherché · Les parenthèses externes sont obligatoires</mat-hint>
+            <mat-error *ngIf="form.get('userSearchFilter')?.hasError('required')">Format requis : (|(uid=*&#123;0&#125;*)(cn=*&#123;0&#125;*))</mat-error>
+          </mat-form-field>
+          <div class="filter-warning" *ngIf="form.get('userSearchFilter')?.value && !form.get('userSearchFilter')?.value?.startsWith('(')">
+            <mat-icon>warning</mat-icon>
+            Le filtre doit commencer par <code>(</code>
+          </div>
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Mapping attributs -->
+    <mat-card class="config-section">
+      <div class="section-header">
+        <mat-icon>swap_horiz</mat-icon>
+        <span>Mapping des attributs</span>
+      </div>
+      <div class="section-body">
+        <div class="form-row attrs-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Nom d'utilisateur</mat-label>
+            <input matInput formControlName="usernameAttribute">
+            <mat-hint>sAMAccountName (AD) ou uid (LDAP)</mat-hint>
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="emailAttribute">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Prénom</mat-label>
+            <input matInput formControlName="firstnameAttribute">
+          </mat-form-field>
+          <mat-form-field appearance="outline">
+            <mat-label>Nom</mat-label>
+            <input matInput formControlName="lastnameAttribute">
+          </mat-form-field>
+        </div>
+      </div>
+    </mat-card>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button mat-stroked-button type="button" (click)="testConnection()" [disabled]="saving || testing">
+        <mat-spinner *ngIf="testing" diameter="16" style="display:inline-block;margin-right:6px"></mat-spinner>
+        <mat-icon *ngIf="!testing">wifi_tethering</mat-icon>
+        {{ testing ? 'Test en cours...' : 'Tester la connexion' }}
+      </button>
+      <button mat-raised-button color="primary" type="button" (click)="save()" [disabled]="saving || testing">
+        <mat-spinner *ngIf="saving" diameter="16" style="display:inline-block;margin-right:6px"></mat-spinner>
+        <mat-icon *ngIf="!saving">save</mat-icon>
+        {{ saving ? 'Sauvegarde...' : 'Sauvegarder' }}
+      </button>
+    </div>
+
+  </form>
+</div>

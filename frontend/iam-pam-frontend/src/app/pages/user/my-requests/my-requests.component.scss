@@ -1,0 +1,104 @@
+.page-header {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 16px; margin-bottom: 16px; flex-wrap: wrap;
+}
+
+.pending-alert {
+  display: inline-block; margin-left: 8px;
+  background: rgba(232,160,32,0.15); color: #b45309;
+  border: 1px solid rgba(232,160,32,0.3);
+  padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
+}
+.approved-alert {
+  display: inline-block; margin-left: 6px;
+  background: rgba(0,196,160,0.12); color: #00a080;
+  border: 1px solid rgba(0,196,160,0.3);
+  padding: 1px 8px; border-radius: 10px; font-size: 11px; font-weight: 600;
+}
+
+// Form
+.form-card { margin-bottom: 20px; padding: 0; overflow: hidden; }
+.form-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 20px; border-bottom: 1px solid var(--border); background: #fafbff;
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600;
+  mat-icon { color: var(--accent-teal); font-size: 18px; }
+}
+.full-width { width: 100%; }
+.duration-hint {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; color: var(--text-tertiary);
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+}
+.resource-option {
+  display: flex; align-items: center;
+}
+.resource-option-meta {
+  margin-left: auto; font-size: 11px; color: var(--text-tertiary);
+  font-family: 'DM Mono', monospace;
+}
+
+// Status filters
+.status-filters { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+.status-filter-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px;
+  border: 1px solid var(--border); background: var(--surface);
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  transition: all 0.15s; color: var(--text-secondary);
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  .count-badge { background: var(--border); padding: 1px 6px; border-radius: 10px; font-size: 10px; font-weight: 700; }
+  &:hover { border-color: var(--accent-teal); color: var(--accent-teal); }
+  &.active { background: var(--sidebar-bg); color: var(--accent-amber); border-color: var(--sidebar-bg);
+    .count-badge { background: rgba(255,255,255,0.15); } }
+}
+
+// Table
+.resource-tag {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  background: rgba(0,196,160,0.08); color: var(--accent-teal);
+  border: 1px solid rgba(0,196,160,0.2); padding: 2px 8px; border-radius: 4px;
+}
+.duration-tag {
+  font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600; color: var(--text-secondary);
+  &--infinite { color: #6366f1; font-size: 16px; }
+}
+.indefinite-badge {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(99,102,241,0.1); color: #6366f1;
+  border: 1px solid rgba(99,102,241,0.25); border-radius: 20px;
+  padding: 6px 16px; font-size: 13px; font-weight: 600;
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+.permanent-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(99,102,241,0.1); color: #6366f1;
+  border: 1px solid rgba(99,102,241,0.2); border-radius: 10px;
+  padding: 1px 8px; font-size: 11px; font-weight: 600;
+}
+.justif-cell {
+  max-width: 200px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  font-size: 12px; color: var(--text-secondary);
+}
+.date-cell { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-tertiary); }
+.expiry-cell-soon { color: #ef4444 !important; font-weight: 600; }
+
+.status-cell { display: flex; flex-direction: column; gap: 3px; }
+.review-comment {
+  display: flex; align-items: center; gap: 2px;
+  font-size: 10px; color: var(--text-tertiary); font-style: italic;
+}
+.expiry-warn {
+  display: flex; align-items: center; gap: 2px;
+  font-size: 10px; color: #ef4444; font-weight: 600;
+}
+
+.req-row { transition: background 0.1s; &:hover { background: rgba(0,196,160,0.02); } }
+.full-width { width: 100%; }
+.spinner-center { display: flex; justify-content: center; padding: 40px; }
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px; gap: 12px; color: var(--text-tertiary);
+  mat-icon { font-size: 48px; width: 48px; height: 48px; }
+}

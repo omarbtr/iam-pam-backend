@@ -1,0 +1,114 @@
+<div class="page-container" @fadeIn>
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Tableau de bord</h1>
+      <p class="page-subtitle">Supervision globale · Super-Admin</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="go('/admin/tenants')">
+      <mat-icon>business</mat-icon> Gérer les tenants
+    </button>
+  </div>
+
+  <!-- KPI cards -->
+  <div class="kpi-grid" *ngIf="!loading">
+    <div class="kpi-card kpi--blue">
+      <div class="kpi-icon"><mat-icon>domain</mat-icon></div>
+      <div class="kpi-body">
+        <span class="kpi-value">{{ tenants.length }}</span>
+        <span class="kpi-label">Total tenants</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi--teal">
+      <div class="kpi-icon"><mat-icon>check_circle</mat-icon></div>
+      <div class="kpi-body">
+        <span class="kpi-value">{{ activeCount }}</span>
+        <span class="kpi-label">Tenants actifs</span>
+      </div>
+    </div>
+    <div class="kpi-card" [class.kpi--amber]="inactiveCount > 0" [class.kpi--neutral]="inactiveCount === 0">
+      <div class="kpi-icon"><mat-icon>pause_circle</mat-icon></div>
+      <div class="kpi-body">
+        <span class="kpi-value">{{ inactiveCount }}</span>
+        <span class="kpi-label">Tenants inactifs</span>
+      </div>
+    </div>
+    <div class="kpi-card kpi--purple">
+      <div class="kpi-icon"><mat-icon>group</mat-icon></div>
+      <div class="kpi-body">
+        <span class="kpi-value">{{ totalUsers }}<span class="kpi-max"> / {{ totalCapacity }}</span></span>
+        <span class="kpi-label">Utilisateurs (tous tenants)</span>
+        <div class="kpi-bar">
+          <div class="kpi-bar-fill" [style.width.%]="capacityPercent"
+               [class.kpi-bar-fill--warn]="capacityPercent > 80"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="spinner-wrap" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Content grid -->
+  <div class="content-grid" *ngIf="!loading">
+
+    <!-- Services distribution -->
+    <div class="section-card">
+      <div class="section-header">
+        <mat-icon>widgets</mat-icon>
+        <span>Services déployés</span>
+      </div>
+      <div class="service-list">
+        <div *ngFor="let s of serviceSummary()" class="service-row">
+          <span class="service-dot" [style.background]="s.color"></span>
+          <span class="service-name">{{ s.name }}</span>
+          <div class="service-bar-wrap">
+            <div class="service-bar">
+              <div class="service-bar-fill"
+                   [style.width.%]="tenants.length > 0 ? s.count / tenants.length * 100 : 0"
+                   [style.background]="s.color + 'aa'"></div>
+            </div>
+          </div>
+          <span class="service-count" [style.color]="s.color">{{ s.count }}</span>
+        </div>
+        <div class="empty-hint" *ngIf="serviceSummary().length === 0">
+          <mat-icon>info_outline</mat-icon> Aucun service activé
+        </div>
+      </div>
+    </div>
+
+    <!-- Recent tenants -->
+    <div class="section-card">
+      <div class="section-header">
+        <mat-icon>schedule</mat-icon>
+        <span>Tenants récents</span>
+      </div>
+      <div class="recent-list">
+        <div *ngFor="let t of recentTenants()" class="recent-row" (click)="go('/admin/tenants')">
+          <div class="recent-avatar">{{ t.tenantName.charAt(0).toUpperCase() }}</div>
+          <div class="recent-info">
+            <strong>{{ t.tenantName }}</strong>
+            <span class="mono">{{ t.tenantId }}</span>
+          </div>
+          <div class="recent-meta">
+            <span class="status-badge" [class.status-active]="t.isActive" [class.status-rejected]="!t.isActive">
+              {{ t.isActive ? 'Actif' : 'Inactif' }}
+            </span>
+            <span class="recent-users">{{ t.currentUserCount }} / {{ t.maxUsers }} users</span>
+          </div>
+        </div>
+        <div class="empty-hint" *ngIf="recentTenants().length === 0">
+          <mat-icon>domain_disabled</mat-icon> Aucun tenant créé
+        </div>
+      </div>
+      <div class="section-footer">
+        <button mat-button (click)="go('/admin/tenants')">
+          Voir tous les tenants <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>

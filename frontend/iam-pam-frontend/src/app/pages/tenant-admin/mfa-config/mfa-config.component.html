@@ -1,0 +1,70 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Configuration MFA du Tenant</h1>
+      <p class="page-subtitle">Choisissez les méthodes d'authentification disponibles pour vos utilisateurs</p>
+    </div>
+    <button mat-raised-button color="primary" (click)="save()" [disabled]="saving || loading">
+      <mat-spinner diameter="16" *ngIf="saving" style="display:inline-block;margin-right:6px"></mat-spinner>
+      <mat-icon *ngIf="!saving">save</mat-icon>
+      {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+    </button>
+  </div>
+
+  <div class="spinner-center" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <ng-container *ngIf="!loading && config">
+
+    <!-- Methods grid -->
+    <div class="section-label">
+      <mat-icon>security</mat-icon>
+      Méthodes disponibles — {{ enabledCount }} activée(s)
+    </div>
+
+    <div class="methods-grid">
+      <div *ngFor="let m of methods"
+           class="method-toggle"
+           [class.method-toggle--on]="config[m.key]"
+           (click)="toggle(m.key)">
+        <div class="toggle-icon" [class.icon--on]="config[m.key]">
+          <mat-icon>{{ m.icon }}</mat-icon>
+        </div>
+        <div class="toggle-body">
+          <div class="toggle-label">{{ m.label }}</div>
+          <div class="toggle-desc">{{ m.desc }}</div>
+        </div>
+        <mat-slide-toggle
+          [checked]="!!config[m.key]"
+          (click)="$event.stopPropagation(); toggle(m.key)"
+          color="primary">
+        </mat-slide-toggle>
+      </div>
+    </div>
+
+    <!-- MFA Required switch -->
+    <div class="required-card">
+      <div class="required-body">
+        <div class="required-title">
+          <mat-icon>gpp_maybe</mat-icon>
+          MFA obligatoire pour tous les utilisateurs
+        </div>
+        <div class="required-desc">
+          Si activé, chaque utilisateur devra compléter le MFA après sa connexion initiale.
+          Laissez désactivé pour rendre le MFA optionnel.
+        </div>
+      </div>
+      <mat-slide-toggle [(ngModel)]="config.mfaRequired" color="warn"></mat-slide-toggle>
+    </div>
+
+    <!-- Warning if no method enabled but MFA required -->
+    <div *ngIf="config.mfaRequired && enabledCount === 0" class="warn-banner">
+      <mat-icon>warning</mat-icon>
+      Vous devez activer au moins une méthode MFA pour pouvoir l'imposer aux utilisateurs.
+    </div>
+
+  </ng-container>
+
+</div>

@@ -1,0 +1,235 @@
+/* xterm.js styles */
+@import 'xterm/css/xterm';
+
+/* ─── CSS Design Tokens ───────────────────────────────────────────────── */
+:root {
+  --sidebar-bg:        #080c14;
+  --sidebar-border:    #1a2236;
+  --sidebar-text:      #7a8fa8;
+  --sidebar-text-hover:#c8d8ea;
+  --sidebar-active:    #e8a020;
+  --accent-amber:      #e8a020;
+  --accent-amber-glow: rgba(232,160,32,0.15);
+  --accent-teal:       #00c4a0;
+  --accent-teal-bg:    rgba(0,196,160,0.08);
+  --content-bg:        #f7f8fc;
+  --surface:           #ffffff;
+  --border:            #e8ecf4;
+  --text-primary:      #0d1520;
+  --text-secondary:    #5a6a80;
+  --text-tertiary:     #8a9ab0;
+  --status-approved:   #00c4a0;
+  --status-pending:    #e8a020;
+  --status-rejected:   #e8423a;
+  --status-revoked:    #8a9ab0;
+  --radius-sm:         6px;
+  --radius-md:         10px;
+  --radius-lg:         16px;
+  --shadow-sm:         0 1px 4px rgba(0,0,0,0.06);
+  --shadow-md:         0 4px 16px rgba(0,0,0,0.08);
+  --shadow-lg:         0 8px 32px rgba(0,0,0,0.12);
+}
+
+/* ─── Reset & Base ────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'Outfit', sans-serif;
+  background: var(--content-bg);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Typography Overrides ────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+code, .mono { font-family: 'DM Mono', monospace; }
+
+/* ─── Angular Material Overrides ──────────────────────────────────────── */
+.mat-mdc-card {
+  border-radius: var(--radius-lg) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--border) !important;
+  background: var(--surface) !important;
+}
+
+.mat-mdc-table {
+  background: transparent !important;
+  font-family: 'Outfit', sans-serif !important;
+}
+
+.mat-mdc-header-row {
+  background: #f0f3fa !important;
+}
+
+.mat-mdc-header-cell {
+  font-family: 'Syne', sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: var(--text-tertiary) !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+.mat-mdc-row:hover {
+  background: #f7f9ff !important;
+  transition: background 0.15s;
+}
+
+.mat-mdc-cell {
+  color: var(--text-primary) !important;
+  border-bottom: 1px solid var(--border) !important;
+  font-size: 14px !important;
+}
+
+.mat-mdc-form-field {
+  font-family: 'Outfit', sans-serif !important;
+}
+
+.mat-mdc-raised-button.mat-primary {
+  background: var(--accent-amber) !important;
+  color: #fff !important;
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  border-radius: var(--radius-sm) !important;
+  box-shadow: 0 2px 12px rgba(232,160,32,0.3) !important;
+  transition: box-shadow 0.2s, transform 0.15s !important;
+
+  &:hover {
+    box-shadow: 0 4px 20px rgba(232,160,32,0.45) !important;
+    transform: translateY(-1px);
+  }
+}
+
+.mat-mdc-raised-button.mat-warn {
+  border-radius: var(--radius-sm) !important;
+}
+
+.mat-mdc-icon-button .mat-icon {
+  color: var(--text-secondary);
+  transition: color 0.15s;
+}
+
+.mat-mdc-icon-button:hover .mat-icon {
+  color: var(--text-primary);
+}
+
+.mat-mdc-chip.mat-mdc-standard-chip {
+  font-family: 'DM Mono', monospace !important;
+  font-size: 11px !important;
+  height: 22px !important;
+  border-radius: 4px !important;
+}
+
+.mat-mdc-snack-bar-container {
+  font-family: 'Outfit', sans-serif !important;
+}
+
+/* ─── Page Layout Helper ───────────────────────────────────────────────── */
+.page-container {
+  animation: fadeUp 0.3s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Shared Component Styles ──────────────────────────────────────────── */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 28px;
+
+  .page-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: -0.03em;
+  }
+
+  .page-subtitle {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+    font-weight: 400;
+  }
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  &.status-active, &.status-approved {
+    background: rgba(0,196,160,0.1);
+    color: var(--status-approved);
+  }
+  &.status-pending {
+    background: rgba(232,160,32,0.1);
+    color: var(--status-pending);
+  }
+  &.status-inactive, &.status-rejected {
+    background: rgba(232,66,58,0.1);
+    color: var(--status-rejected);
+  }
+  &.status-revoked, &.status-expired {
+    background: rgba(138,154,176,0.12);
+    color: var(--status-revoked);
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px;
+  color: var(--text-tertiary);
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    opacity: 0.4;
+  }
+
+  p {
+    font-size: 14px;
+    font-family: 'Outfit', sans-serif;
+  }
+}
+
+.spinner-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 64px;
+}
+
+.full-width { width: 100%; }

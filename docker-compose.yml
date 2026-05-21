@@ -1,0 +1,153 @@
+
+# docker-compose.yml - Configuration finale optimisée
+# Version complète avec base Keycloak + base application
+
+version: '3.8'
+
+services:
+  # PostgreSQL - Base de données principale
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-multi-db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - iam-pam-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Keycloak - Serveur d'authentification
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: keycloak-dev
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: start-dev
+    environment:
+      # Admin Keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      
+      # Configuration base de données
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_DB_SCHEMA: public
+      
+      # Configuration HTTP
+      KC_HTTP_ENABLED: true
+      KC_HOSTNAME_STRICT: false
+      KC_HOSTNAME_STRICT_HTTPS: false
+      KC_HTTP_RELATIVE_PATH: /
+      
+      # Logs
+      KC_LOG_LEVEL: INFO
+    ports:
+      - "8080:8080"
+    networks:
+      - iam-pam-network
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\\r\\nHost: localhost\\r\\nConnection: close\\r\\n\\r\\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # pgAdmin - Interface web PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin-dev
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@iam-pam.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "5050:80"
+    networks:
+      - iam-pam-network
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+
+  # OpenLDAP - Annuaire Active Directory de test
+  openldap:
+    image: osixia/openldap:1.5.0
+    container_name: openldap-dev
+    environment:
+      LDAP_ORGANISATION: "IAM PAM Demo"
+      LDAP_DOMAIN: "bank-a.local"
+      LDAP_ADMIN_PASSWORD: "Admin1234"
+      LDAP_CONFIG_PASSWORD: "Config1234"
+      LDAP_READONLY_USER: "true"
+      LDAP_READONLY_USER_USERNAME: "readonly"
+      LDAP_READONLY_USER_PASSWORD: "Readonly1234"
+    ports:
+      - "389:389"
+      - "636:636"
+    volumes:
+      - openldap_data:/var/lib/ldap
+      - openldap_config:/etc/ldap/slapd.d
+    networks:
+      - iam-pam-network
+
+  # phpLDAPadmin - Interface web pour gérer l'OpenLDAP
+  phpldapadmin:
+    image: osixia/phpldapadmin:0.9.0
+    container_name: phpldapadmin-dev
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: openldap
+      PHPLDAPADMIN_HTTPS: "false"
+    ports:
+      - "8090:80"
+    depends_on:
+      - openldap
+    networks:
+      - iam-pam-network
+
+  # Redis - Cache (pour sessions, rate limiting)
+  redis:
+    image: redis:7-alpine
+    container_name: redis-dev
+    command: redis-server --appendonly yes
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - iam-pam-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+  redis_data:
+    driver: local
+  openldap_data:
+    driver: local
+  openldap_config:
+    driver: local
+
+networks:
+  iam-pam-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

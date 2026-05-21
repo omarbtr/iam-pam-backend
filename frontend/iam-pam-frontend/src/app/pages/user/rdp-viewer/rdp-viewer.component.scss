@@ -1,0 +1,261 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.rdp-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 64px);
+  background: #1a1a2e;
+}
+
+.rdp-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 16px;
+  background: #161b22;
+  border-bottom: 1px solid #30363d;
+  flex-shrink: 0;
+
+  .rdp-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #c9d1d9;
+    font-weight: 600;
+    font-size: 15px;
+
+    mat-icon { color: #58a6ff; font-size: 20px; }
+
+    .session-id {
+      color: #58a6ff;
+      font-size: 12px;
+      background: #1f2937;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+  }
+
+  .rdp-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #8b949e;
+    font-size: 13px;
+    margin-left: auto;
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #484f58;
+
+      &.dot--connecting { background: #d29922; animation: pulse 1s infinite; }
+      &.dot--connected  { background: #3fb950; }
+      &.dot--error      { background: #ff7b72; }
+    }
+
+    .error-text { color: #ff7b72; }
+  }
+
+  .audit-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border: 1px solid #30363d;
+    border-radius: 6px;
+    background: transparent;
+    color: #8b949e;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    height: 32px;
+    position: relative;
+
+    mat-icon { font-size: 16px; width: 16px; height: 16px; }
+
+    &:hover { background: #1f2937; color: #c9d1d9; border-color: #58a6ff; }
+    &.audit-toggle-btn--active { background: #1f2937; color: #58a6ff; border-color: #58a6ff; }
+
+    .audit-badge {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      background: #58a6ff;
+      color: #0d1117;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 700;
+      min-width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+      line-height: 1;
+    }
+  }
+
+  .disconnect-btn {
+    color: #ff7b72;
+    border-color: #ff7b72;
+    font-size: 13px;
+    height: 32px;
+    padding: 0 12px;
+  }
+}
+
+.rdp-body {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  overflow: hidden;
+}
+
+.rdp-wrap {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  background: #000;
+}
+
+// ── Audit log sidebar ──────────────────────────────────────────
+.audit-sidebar {
+  width: 320px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  background: #0d1117;
+  border-left: 1px solid #30363d;
+  overflow: hidden;
+
+  .audit-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    background: #161b22;
+    border-bottom: 1px solid #30363d;
+    color: #c9d1d9;
+    font-size: 13px;
+    font-weight: 600;
+    flex-shrink: 0;
+
+    mat-icon { color: #58a6ff; font-size: 18px; width: 18px; height: 18px; }
+
+    .audit-refresh-hint {
+      margin-left: auto;
+      color: #484f58;
+      font-size: 11px;
+      font-weight: 400;
+    }
+  }
+
+  .audit-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #484f58;
+    font-size: 13px;
+
+    mat-icon { font-size: 36px; width: 36px; height: 36px; opacity: 0.5; }
+  }
+
+  .audit-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+
+    &::-webkit-scrollbar { width: 4px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: #30363d; border-radius: 2px; }
+  }
+
+  .audit-entry {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 14px;
+    border-bottom: 1px solid #161b22;
+    transition: background 0.1s;
+
+    &:hover { background: #161b22; }
+
+    .audit-icon {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      mat-icon { font-size: 16px; width: 16px; height: 16px; }
+    }
+
+    .audit-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+
+      .audit-type {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: capitalize;
+        white-space: nowrap;
+      }
+
+      .audit-detail {
+        font-size: 11px;
+        color: #6e7681;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .audit-time {
+      flex-shrink: 0;
+      font-size: 10px;
+      color: #484f58;
+      margin-top: 2px;
+      font-family: monospace;
+    }
+  }
+}
+
+.rdp-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #8b949e;
+  z-index: 10;
+}
+
+.rdp-display {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+
+  canvas {
+    display: block;
+    cursor: default;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}

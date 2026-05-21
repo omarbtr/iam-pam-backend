@@ -1,0 +1,77 @@
+.form-layout { display: flex; flex-direction: column; gap: 20px; }
+
+// Preset bar
+.preset-bar {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  padding: 12px 16px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius-lg);
+}
+.preset-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); flex-shrink: 0; }
+.preset-btn {
+  font-size: 12px;
+  &.preset-btn--ldap { border-color: rgba(0,196,160,0.4); color: #00a080; }
+  &.preset-btn--ad   { border-color: rgba(59,130,246,0.4); color: #3b82f6; }
+}
+
+// Filter warning
+.filter-warning {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 11px; color: #e8a020;
+  padding: 4px 0; margin-top: -8px;
+  mat-icon { font-size: 14px; width: 14px; height: 14px; }
+  code { background: rgba(232,160,32,0.12); padding: 1px 4px; border-radius: 3px; font-family: 'DM Mono', monospace; }
+}
+
+.config-section { padding: 0; overflow: hidden; }
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  background: #fafbff;
+  font-family: 'Syne', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  mat-icon { font-size: 18px; width: 18px; height: 18px; color: var(--accent-teal); }
+}
+
+.section-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+
+.form-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  .flex-1 { flex: 1; }
+  .flex-3 { flex: 3; }
+}
+
+.attrs-row { flex-wrap: wrap; mat-form-field { flex: 1; min-width: 160px; } }
+
+.ssl-toggle {
+  padding-top: 16px;
+  white-space: nowrap;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: rgba(107,114,128,0.1);
+  color: var(--text-secondary);
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+  &.status-ok { background: rgba(0,196,160,0.1); color: var(--accent-teal); }
+  &.status-fail { background: rgba(239,68,68,0.1); color: #ef4444; }
+}

@@ -1,0 +1,30 @@
+<div class="setup-container">
+  <div class="setup-card">
+    <div class="setup-icon">
+      <mat-icon>domain</mat-icon>
+    </div>
+    <h1 class="setup-title">Configuration initiale</h1>
+    <p class="setup-subtitle">
+      Bienvenue ! Avant d'accéder à votre espace, veuillez configurer le domaine de votre organisation.
+    </p>
+    <p *ngIf="tenantId" class="tenant-badge">Tenant : <strong>{{ tenantId }}</strong></p>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="setup-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Domaine de l'organisation</mat-label>
+        <input matInput formControlName="domain" placeholder="entreprise.iam-pam.com">
+        <mat-icon matPrefix>language</mat-icon>
+        <mat-hint>Ex: banque-abc.iam-pam.com — doit être unique</mat-hint>
+        <mat-error *ngIf="form.get('domain')?.hasError('required')">Le domaine est requis</mat-error>
+        <mat-error *ngIf="form.get('domain')?.hasError('pattern')">Format de domaine invalide</mat-error>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" type="submit"
+              [disabled]="form.invalid || loading" class="submit-btn">
+        <mat-spinner *ngIf="loading" diameter="18" style="display:inline-block;margin-right:8px"></mat-spinner>
+        <mat-icon *ngIf="!loading">check_circle</mat-icon>
+        {{ loading ? 'Configuration...' : 'Confirmer le domaine' }}
+      </button>
+    </form>
+  </div>
+</div>

@@ -1,0 +1,198 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Ressources PAM</h1>
+      <p class="page-subtitle">{{ filteredResources.length }} ressource(s)</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Rechercher</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [(ngModel)]="searchQuery" placeholder="nom, hôte...">
+        <button *ngIf="searchQuery" matSuffix mat-icon-button (click)="searchQuery=''"><mat-icon>close</mat-icon></button>
+      </mat-form-field>
+      <button mat-raised-button color="primary" *ngIf="auth.isTenantAdmin()" (click)="openCreate()">
+        <mat-icon>add</mat-icon> Nouvelle ressource
+      </button>
+    </div>
+  </div>
+
+  <!-- Capacity banner -->
+  <div class="capacity-banner" *ngIf="tenant">
+    <mat-icon>storage</mat-icon>
+    <ng-container *ngIf="tenant.maxResources; else unlimitedBanner">
+      <span class="cap-text">
+        Capacité : <strong>{{ activeResourceCount }} / {{ tenant.maxResources }}</strong> ressource(s) actives
+      </span>
+      <div class="cap-bar-track">
+        <div class="cap-bar-fill"
+          [style.width.%]="resourceLimitPercent"
+          [class.cap-bar-warn]="resourceLimitPercent >= 80"
+          [class.cap-bar-full]="resourceLimitPercent >= 100">
+        </div>
+      </div>
+      <span class="cap-pct"
+        [class.cap-warn-text]="resourceLimitPercent >= 80">
+        {{ resourceLimitPercent }}%
+      </span>
+      <span class="cap-alert" *ngIf="resourceLimitPercent >= 100">
+        <mat-icon>warning</mat-icon> Limite atteinte
+      </span>
+    </ng-container>
+    <ng-template #unlimitedBanner>
+      <span class="cap-text">
+        <strong>{{ activeResourceCount }}</strong> ressource(s) active(s) — <span style="opacity:.7;font-style:italic">illimité</span>
+      </span>
+    </ng-template>
+  </div>
+
+  <!-- Filtres type -->
+  <div class="type-filters">
+    <button class="type-btn" [class.active]="filterType === ''" (click)="filterType = ''">
+      <mat-icon>apps</mat-icon> Toutes <span class="count-badge">{{ resources.length }}</span>
+    </button>
+    <button *ngFor="let t of resourceTypes" class="type-btn" [class.active]="filterType === t" (click)="filterType = t">
+      <mat-icon>{{ typeIcon(t) }}</mat-icon> {{ t }} <span class="count-badge">{{ countByType(t) }}</span>
+    </button>
+  </div>
+
+  <!-- Form inline -->
+  <mat-card *ngIf="showForm" class="form-card">
+    <div class="form-header">
+      <mat-icon>{{ editingId ? 'edit' : 'add_circle' }}</mat-icon>
+      <span>{{ editingId ? 'Modifier la ressource' : 'Nouvelle ressource' }}</span>
+      <span style="flex:1"></span>
+      <button mat-icon-button (click)="showForm=false"><mat-icon>close</mat-icon></button>
+    </div>
+    <div style="padding:20px" [formGroup]="form">
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Nom</mat-label>
+          <input matInput formControlName="name" placeholder="Serveur SSH Production">
+          <mat-error>Requis</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Type</mat-label>
+          <mat-select formControlName="type">
+            <mat-option *ngFor="let t of resourceTypes" [value]="t">
+              <mat-icon style="vertical-align:middle;margin-right:6px;font-size:16px">{{ typeIcon(t) }}</mat-icon>{{ t }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="form-row">
+        <mat-form-field appearance="outline" style="flex:3">
+          <mat-label>Hôte / IP</mat-label>
+          <input matInput formControlName="host" placeholder="192.168.1.100">
+          <mat-error>Requis</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" style="flex:1">
+          <mat-label>Port</mat-label>
+          <input matInput type="number" formControlName="port" placeholder="22">
+        </mat-form-field>
+      </div>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput formControlName="description" rows="2" placeholder="Description optionnelle..."></textarea>
+      </mat-form-field>
+
+      <!-- ── Credentials SSH ────────────────────────────────────────────── -->
+      <div style="margin:12px 0 6px;font-size:12px;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.06em">
+        Credentials SSH (optionnel)
+      </div>
+      <div class="form-row">
+        <mat-form-field appearance="outline">
+          <mat-label>Utilisateur</mat-label>
+          <input matInput formControlName="credentialUsername" placeholder="demo-server">
+          <mat-icon matPrefix style="font-size:16px;margin-right:4px">person</mat-icon>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Mot de passe</mat-label>
+          <input matInput type="password" formControlName="credentialPassword"
+            [placeholder]="editingId ? 'Laisser vide = inchangé' : '••••••••'">
+          <mat-icon matPrefix style="font-size:16px;margin-right:4px">lock</mat-icon>
+        </mat-form-field>
+      </div>
+      <mat-form-field appearance="outline" class="full-width" *ngIf="form.get('type')?.value === 'SSH'">
+        <mat-label>Clé privée SSH (PEM)</mat-label>
+        <textarea matInput formControlName="credentialPrivateKey" rows="4"
+          placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;...&#10;-----END RSA PRIVATE KEY-----"></textarea>
+        <mat-icon matPrefix style="font-size:16px;margin-right:4px">vpn_key</mat-icon>
+      </mat-form-field>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button mat-button (click)="showForm=false">Annuler</button>
+        <button mat-raised-button color="primary" (click)="submit()" [disabled]="form.invalid">
+          <mat-icon>{{ editingId ? 'save' : 'add' }}</mat-icon> {{ editingId ? 'Sauvegarder' : 'Créer' }}
+        </button>
+      </div>
+    </div>
+  </mat-card>
+
+  <mat-card style="padding:0;overflow:hidden">
+    <div *ngIf="loading" class="spinner-center"><mat-spinner diameter="36"></mat-spinner></div>
+
+    <table mat-table [dataSource]="filteredResources" *ngIf="!loading" class="full-width">
+
+      <ng-container matColumnDef="name">
+        <th mat-header-cell *matHeaderCellDef>Ressource</th>
+        <td mat-cell *matCellDef="let r">
+          <div class="name-cell">
+            <strong>{{ r.name }}</strong>
+            <small *ngIf="r.description">{{ r.description }}</small>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="type">
+        <th mat-header-cell *matHeaderCellDef>Type</th>
+        <td mat-cell *matCellDef="let r">
+          <span [class]="'type-badge type-' + r.type">
+            <mat-icon>{{ typeIcon(r.type) }}</mat-icon> {{ r.type }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="host">
+        <th mat-header-cell *matHeaderCellDef>Hôte</th>
+        <td mat-cell *matCellDef="let r"><span class="host-cell">{{ r.host }}</span></td>
+      </ng-container>
+
+      <ng-container matColumnDef="port">
+        <th mat-header-cell *matHeaderCellDef>Port</th>
+        <td mat-cell *matCellDef="let r"><span class="port-cell">{{ r.port || '—' }}</span></td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Statut</th>
+        <td mat-cell *matCellDef="let r">
+          <span [class]="'status-badge ' + (r.isActive ? 'status-active' : 'status-rejected')">
+            {{ r.isActive ? 'Actif' : 'Inactif' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let r">
+          <div class="actions-cell" *ngIf="auth.isTenantAdmin()">
+            <button mat-icon-button (click)="openEdit(r)" matTooltip="Modifier"><mat-icon>edit</mat-icon></button>
+            <button mat-icon-button color="warn" (click)="delete(r)" *ngIf="r.isActive" matTooltip="Désactiver"><mat-icon>block</mat-icon></button>
+          </div>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="res-row"></tr>
+    </table>
+
+    <div *ngIf="!loading && filteredResources.length === 0" class="empty-state">
+      <mat-icon>{{ isFiltering ? 'search_off' : 'dns' }}</mat-icon>
+      <p>{{ isFiltering ? 'Aucune ressource pour ces filtres' : 'Aucune ressource configurée' }}</p>
+      <button mat-stroked-button *ngIf="isFiltering" (click)="clearFilters()">Effacer les filtres</button>
+      <button mat-raised-button color="primary" *ngIf="!isFiltering && auth.isTenantAdmin()" (click)="openCreate()">
+        <mat-icon>add</mat-icon> Ajouter une ressource
+      </button>
+    </div>
+  </mat-card>
+</div>

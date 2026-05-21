@@ -1,0 +1,45 @@
+<h2 mat-dialog-title>{{ isEdit ? 'Modifier le tenant' : 'Nouveau tenant' }}</h2>
+
+<mat-dialog-content [formGroup]="form">
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>ID Tenant</mat-label>
+    <input matInput formControlName="tenantId" placeholder="ex: acme-corp">
+    <mat-error *ngIf="form.get('tenantId')?.hasError('required')">Requis</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Nom du tenant</mat-label>
+    <input matInput formControlName="tenantName" placeholder="ex: ACME Corporation">
+    <mat-error *ngIf="form.get('tenantName')?.hasError('required')">Requis</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Limite utilisateurs</mat-label>
+    <input matInput type="number" formControlName="maxUsers" min="1">
+    <mat-error *ngIf="form.get('maxUsers')?.hasError('min')">Minimum 1</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Limite ressources (vide = illimité)</mat-label>
+    <mat-icon matPrefix>storage</mat-icon>
+    <input matInput type="number" formControlName="maxResources" min="1" placeholder="ex: 20">
+    <mat-hint>Laissez vide pour un accès illimité aux ressources</mat-hint>
+    <mat-error *ngIf="form.get('maxResources')?.hasError('min')">Minimum 1</mat-error>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Services</mat-label>
+    <mat-select formControlName="services" multiple>
+      <mat-option *ngFor="let s of allServices" [value]="s">{{ s }}</mat-option>
+    </mat-select>
+    <mat-error *ngIf="form.get('services')?.hasError('required')">Au moins un service requis</mat-error>
+  </mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Annuler</button>
+  <button mat-raised-button color="primary" (click)="submit()" [disabled]="form.invalid || loading">
+    <mat-spinner *ngIf="loading" diameter="18" style="display:inline-block;margin-right:8px"></mat-spinner>
+    {{ isEdit ? 'Sauvegarder' : 'Créer' }}
+  </button>
+</mat-dialog-actions>

@@ -1,0 +1,220 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Authentification Multi-Facteurs</h1>
+      <p class="page-subtitle">Renforcez la sécurité de votre compte avec une seconde vérification</p>
+    </div>
+  </div>
+
+  <!-- ── Spinner while loading ────────────────────────────────────────────── -->
+  <div *ngIf="configLoading || statusLoading" class="spinner-center">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <ng-container *ngIf="!configLoading && !statusLoading">
+
+    <!-- ── Current MFA status banner ─────────────────────────────────────── -->
+    <div *ngIf="mfaStatus?.enrolled" class="status-banner status-banner--active">
+      <mat-icon>verified_user</mat-icon>
+      <div>
+        <strong>MFA activé — {{ methodLabel(mfaStatus!.method!) }}</strong>
+        <span>Configuré le {{ mfaStatus!.enrolledAt | date:'dd/MM/yyyy à HH:mm' }}</span>
+      </div>
+      <button mat-stroked-button color="warn" (click)="removeMfa()" style="margin-left:auto">
+        <mat-icon>delete_outline</mat-icon> Désactiver
+      </button>
+    </div>
+
+    <div *ngIf="!mfaStatus?.enrolled" class="status-banner status-banner--warn">
+      <mat-icon>warning_amber</mat-icon>
+      <div>
+        <strong>MFA non configuré</strong>
+        <span>Activez une méthode ci-dessous pour sécuriser votre compte.</span>
+      </div>
+    </div>
+
+    <!-- ── No methods enabled by admin ───────────────────────────────────── -->
+    <div *ngIf="hasNoMethodsEnabled" class="info-banner">
+      <mat-icon>info_outline</mat-icon>
+      <div>
+        <strong>Aucune méthode MFA activée par votre administrateur</strong>
+        <span>Contactez votre administrateur tenant pour activer les méthodes MFA disponibles.</span>
+      </div>
+    </div>
+
+    <!-- ── Enrollment flow ───────────────────────────────────────────────── -->
+    <div *ngIf="!hasNoMethodsEnabled" class="enroll-card">
+
+      <!-- Step: pick method -->
+      <ng-container *ngIf="enrollStep === 'pick' || enrollStep === 'done'">
+        <div class="enroll-header">
+          <mat-icon>security</mat-icon>
+          <span>{{ mfaStatus?.enrolled ? 'Changer de méthode MFA' : 'Configurer le MFA' }}</span>
+        </div>
+        <div class="methods-grid">
+          <div *ngFor="let m of enabledMethods"
+               class="method-card"
+               [class.method-card--active]="mfaStatus?.method === m.id && mfaStatus?.enrolled"
+               (click)="startEnroll(m.id)">
+            <div class="method-icon" [class.icon--active]="mfaStatus?.method === m.id && mfaStatus?.enrolled">
+              <mat-icon>{{ m.icon }}</mat-icon>
+            </div>
+            <div class="method-body">
+              <div class="method-name">{{ m.label }}</div>
+              <div class="method-desc">{{ m.desc }}</div>
+            </div>
+            <div class="method-badge" *ngIf="mfaStatus?.method === m.id && mfaStatus?.enrolled">
+              <mat-icon>check_circle</mat-icon> Actif
+            </div>
+            <mat-icon class="method-arrow">arrow_forward</mat-icon>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Step: setup (enter contact for EMAIL/SMS or show TOTP info) -->
+      <ng-container *ngIf="enrollStep === 'setup'">
+        <div class="enroll-header">
+          <button mat-icon-button (click)="cancelEnroll()"><mat-icon>arrow_back</mat-icon></button>
+          <mat-icon>{{ methodIcon(selectedMethod!) }}</mat-icon>
+          <span>Configurer — {{ methodLabel(selectedMethod!) }}</span>
+        </div>
+        <div class="enroll-body">
+
+          <!-- TOTP: no input needed, just explain -->
+          <ng-container *ngIf="selectedMethod === 'TOTP'">
+            <p>Après avoir cliqué sur <strong>Suivant</strong>, un QR code s'affichera.<br>
+               Scannez-le avec Google Authenticator, Authy ou toute application compatible TOTP.</p>
+          </ng-container>
+
+          <!-- EMAIL -->
+          <ng-container *ngIf="selectedMethod === 'EMAIL'" [formGroup]="enrollEmailForm">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Adresse email</mat-label>
+              <mat-icon matPrefix>email</mat-icon>
+              <input matInput type="email" formControlName="email" placeholder="vous@example.com">
+              <mat-error>Email valide requis</mat-error>
+            </mat-form-field>
+          </ng-container>
+
+          <!-- SMS -->
+          <ng-container *ngIf="selectedMethod === 'SMS'" [formGroup]="enrollSmsForm">
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Numéro de téléphone</mat-label>
+              <mat-icon matPrefix>phone</mat-icon>
+              <input matInput formControlName="phone" placeholder="+33 6 00 00 00 00">
+              <mat-error>Numéro requis</mat-error>
+            </mat-form-field>
+          </ng-container>
+
+          <!-- WHATSAPP -->
+          <ng-container *ngIf="selectedMethod === 'WHATSAPP'" [formGroup]="enrollWhatsappForm">
+            <p style="margin-bottom:12px;color:var(--text-secondary);font-size:13px">
+              Entrez votre numéro WhatsApp avec l'indicatif pays. Vous recevrez un code de confirmation.
+            </p>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>Numéro WhatsApp</mat-label>
+              <mat-icon matPrefix>whatsapp</mat-icon>
+              <input matInput formControlName="phone" placeholder="+216 20 000 000">
+              <mat-error>Numéro requis</mat-error>
+            </mat-form-field>
+          </ng-container>
+
+          <div class="enroll-actions">
+            <button mat-button (click)="cancelEnroll()">Annuler</button>
+            <button mat-raised-button color="primary" (click)="submitSetup()" [disabled]="enrollLoading">
+              <mat-spinner diameter="16" *ngIf="enrollLoading" style="display:inline-block;margin-right:6px"></mat-spinner>
+              Suivant <mat-icon>arrow_forward</mat-icon>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- Step: confirm (enter code) -->
+      <ng-container *ngIf="enrollStep === 'confirm'">
+        <div class="enroll-header">
+          <button mat-icon-button (click)="cancelEnroll()"><mat-icon>arrow_back</mat-icon></button>
+          <mat-icon>pin</mat-icon>
+          <span>Confirmer l'enregistrement</span>
+        </div>
+        <div class="enroll-body">
+
+          <!-- TOTP: show QR + secret -->
+          <ng-container *ngIf="selectedMethod === 'TOTP' && initResp">
+            <p class="enroll-instruction">{{ initResp.message }}</p>
+            <div class="qr-container">
+              <img [src]="'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + encodeURI(initResp.totpQrUri!)"
+                   alt="QR Code TOTP" class="qr-img">
+            </div>
+            <div class="secret-box">
+              <span class="secret-label">Clé manuelle :</span>
+              <code class="secret-value">{{ initResp.totpSecret }}</code>
+            </div>
+          </ng-container>
+
+          <!-- EMAIL / SMS: show instruction -->
+          <ng-container *ngIf="selectedMethod !== 'TOTP' && initResp">
+            <p class="enroll-instruction">{{ initResp.message }}</p>
+          </ng-container>
+
+          <form [formGroup]="confirmForm" (ngSubmit)="submitConfirm()">
+            <mat-form-field appearance="outline" class="code-field">
+              <mat-label>Code à 6 chiffres</mat-label>
+              <mat-icon matPrefix>pin</mat-icon>
+              <input matInput formControlName="code" maxlength="6" inputmode="numeric" autocomplete="one-time-code">
+              <mat-error>Code 6 chiffres requis</mat-error>
+            </mat-form-field>
+            <div class="enroll-actions">
+              <button mat-button type="button" (click)="cancelEnroll()">Annuler</button>
+              <button mat-raised-button color="primary" type="submit" [disabled]="enrollLoading">
+                <mat-spinner diameter="16" *ngIf="enrollLoading" style="display:inline-block;margin-right:6px"></mat-spinner>
+                Confirmer
+              </button>
+            </div>
+          </form>
+        </div>
+      </ng-container>
+
+    </div>
+
+    <!-- ─── Facial Recognition card ──────────────────────────────────────── -->
+    <div class="face-card">
+      <div class="face-card-header">
+        <div class="method-icon" [class.icon--active]="faceStatus?.enrolled">
+          <mat-icon>face_unlock</mat-icon>
+        </div>
+        <div class="method-body">
+          <div class="method-name">Reconnaissance Faciale</div>
+          <div class="method-desc">Connexion par biométrie — alternative aux codes OTP</div>
+          <ng-container *ngIf="!faceLoading">
+            <span class="method-status" [class.status-active]="faceStatus?.enrolled"
+                                        [class.status-inactive]="!faceStatus?.enrolled">
+              <mat-icon>{{ faceStatus?.enrolled ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+              {{ faceStatus?.enrolled ? 'Activé' : 'Non configuré' }}
+            </span>
+            <span *ngIf="faceStatus?.enrolled && faceStatus?.enrolledAt" class="enrolled-date">
+              Enregistré le {{ faceStatus!.enrolledAt | date:'dd/MM/yyyy HH:mm' }}
+            </span>
+          </ng-container>
+          <mat-spinner *ngIf="faceLoading" diameter="16"></mat-spinner>
+        </div>
+        <div class="face-card-actions">
+          <button mat-stroked-button color="primary" (click)="goToFaceVerify()" *ngIf="faceStatus?.enrolled">
+            <mat-icon>verified_user</mat-icon> Tester
+          </button>
+          <button mat-stroked-button color="warn" (click)="removeFace()" *ngIf="faceStatus?.enrolled">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+          <button mat-raised-button color="primary" (click)="toggleEnrollPanel()">
+            <mat-icon>{{ showEnrollPanel ? 'expand_less' : (faceStatus?.enrolled ? 'refresh' : 'face_retouching_natural') }}</mat-icon>
+            {{ faceStatus?.enrolled ? 'Re-enregistrer' : 'Enregistrer' }}
+          </button>
+        </div>
+      </div>
+      <div *ngIf="showEnrollPanel" class="face-enroll-panel">
+        <app-face-enroll (enrolled)="onFaceEnrolled()" (cancelled)="showEnrollPanel = false"></app-face-enroll>
+      </div>
+    </div>
+
+  </ng-container>
+</div>

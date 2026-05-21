@@ -1,0 +1,532 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Tableau de bord</h1>
+      <p class="page-subtitle" *ngIf="tenant">{{ tenant.tenantName }} · <span class="mono">{{ tenant.tenantId }}</span></p>
+    </div>
+    <span class="status-badge status-active" *ngIf="tenant?.isActive">Opérationnel</span>
+  </div>
+
+  <!-- Stats grid -->
+  <div class="stats-grid">
+
+    <!-- Utilisateurs -->
+    <div class="stat-card stat-card--clickable"
+         [class.stat-card--open]="activeCard === 'users'"
+         (click)="openCard('users')">
+      <div class="stat-icon-wrap stat-icon--blue"><mat-icon>group</mat-icon></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ userCount }}<span class="stat-max"> / {{ tenant?.maxUsers }}</span></span>
+        <span class="stat-label">Utilisateurs</span>
+      </div>
+      <div class="stat-bar">
+        <div class="stat-bar-fill" [style.width.%]="userPercent()"
+             [class.stat-bar-fill--warn]="userPercent() > 80"></div>
+      </div>
+      <span class="stat-hint">{{ activeCard === 'users' ? 'Fermer ↑' : 'Voir les détails ↓' }}</span>
+    </div>
+
+    <!-- Ressources -->
+    <div class="stat-card stat-card--clickable"
+         [class.stat-card--open]="activeCard === 'resources'"
+         [class.stat-card--alert]="tenant?.maxResources && resourcePercent() >= 80"
+         (click)="openCard('resources')">
+      <div class="stat-icon-wrap stat-icon--teal"><mat-icon>dns</mat-icon></div>
+      <div class="stat-body">
+        <span class="stat-value">
+          {{ activeResources() }}
+          <span class="stat-max" *ngIf="tenant?.maxResources"> / {{ tenant!.maxResources }}</span>
+          <span class="stat-max" *ngIf="!tenant?.maxResources"> / ∞</span>
+        </span>
+        <span class="stat-label">Ressources PAM actives</span>
+      </div>
+      <div class="stat-bar" *ngIf="tenant?.maxResources">
+        <div class="stat-bar-fill" [style.width.%]="resourcePercent()"
+             [class.stat-bar-fill--warn]="resourcePercent() >= 80"></div>
+      </div>
+      <span class="stat-hint">{{ activeCard === 'resources' ? 'Fermer ↑' : 'Voir les détails ↓' }}</span>
+    </div>
+
+    <!-- Demandes -->
+    <div class="stat-card stat-card--clickable"
+         [class.stat-card--alert]="pendingCount > 0"
+         [class.stat-card--open]="activeCard === 'requests'"
+         (click)="openCard('requests')">
+      <div class="stat-icon-wrap stat-icon--amber"><mat-icon>pending_actions</mat-icon></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ pendingCount }}</span>
+        <span class="stat-label">En attente de validation</span>
+      </div>
+      <span class="stat-hint" [style.color]="pendingCount > 0 ? '#e8a020' : ''">
+        {{ activeCard === 'requests' ? 'Fermer ↑' : (pendingCount > 0 ? 'À traiter ↓' : 'Voir les détails ↓') }}
+      </span>
+    </div>
+
+    <!-- Services -->
+    <div class="stat-card stat-card--clickable" *ngIf="tenant"
+         [class.stat-card--open]="activeCard === 'services'"
+         (click)="openCard('services')">
+      <div class="stat-icon-wrap stat-icon--purple"><mat-icon>corporate_fare</mat-icon></div>
+      <div class="stat-body">
+        <span class="stat-value">{{ tenant.services.length }}</span>
+        <span class="stat-label">Services actifs</span>
+      </div>
+      <span class="stat-hint">{{ activeCard === 'services' ? 'Fermer ↑' : 'Voir les détails ↓' }}</span>
+    </div>
+
+    <!-- Sessions actives -->
+    <div class="stat-card" (click)="navigateTo('/user/sessions')">
+      <div class="stat-icon-wrap stat-icon--teal"><mat-icon>sensors</mat-icon></div>
+      <div class="stat-body">
+        <span class="stat-value" [style.color]="activeSessions > 0 ? '#00c4a0' : ''">{{ activeSessions }}</span>
+        <span class="stat-label">Sessions actives</span>
+      </div>
+      <span class="stat-hint">Connexions en cours</span>
+    </div>
+
+  </div>
+
+  <!-- ─── Charts row ─── -->
+  <div class="charts-row">
+
+    <!-- Bar chart: sessions / day -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <mat-icon>bar_chart</mat-icon>
+        <span>Sessions démarrées — 7 derniers jours</span>
+        <span class="chart-hint" *ngIf="!selectedDay">Cliquer sur une barre pour voir le détail</span>
+        <button mat-icon-button class="chart-clear-btn" *ngIf="selectedDay"
+                (click)="selectedDay = null; daySessions = []" matTooltip="Fermer le détail">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <div class="chart-body" *ngIf="sessionsByDay.length > 0; else noBarData">
+        <div *ngFor="let bar of chartBars()" class="chart-col"
+             [class.chart-col--selected]="selectedDay === bar.date"
+             [class.chart-col--active]="bar.count > 0"
+             (click)="bar.count > 0 && selectDay(bar.date)">
+          <span class="chart-count"
+                [style.color]="bar.count > 0 ? (selectedDay === bar.date ? '#fff' : '#00c4a0') : 'transparent'">
+            {{ bar.count }}
+          </span>
+          <div class="chart-bar-track">
+            <div class="chart-bar-fill"
+                 [style.height.%]="bar.percent"
+                 [class.bar-active]="bar.count > 0"
+                 [class.bar-selected]="selectedDay === bar.date">
+            </div>
+          </div>
+          <span class="chart-day">{{ bar.dayLabel }}</span>
+        </div>
+      </div>
+      <ng-template #noBarData>
+        <div class="chart-empty">
+          <mat-icon>bar_chart</mat-icon>
+          <p>Aucune session cette semaine</p>
+        </div>
+      </ng-template>
+    </div>
+
+    <!-- Donut chart: resource usage -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <mat-icon>donut_large</mat-icon>
+        <span>Utilisation par ressource</span>
+        <span class="chart-hint" *ngIf="!selectedResource">Cliquer pour filtrer</span>
+        <button mat-icon-button class="chart-clear-btn" *ngIf="selectedResource"
+                (click)="selectedResource = null" matTooltip="Effacer le filtre">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+
+      <div class="donut-wrap" *ngIf="totalSessions > 0; else noDonutData">
+        <!-- SVG donut -->
+        <svg viewBox="0 0 160 160" class="donut-svg" aria-hidden="true">
+          <g transform="rotate(-90 80 80)">
+            <circle *ngFor="let s of donutSegments()"
+                    cx="80" cy="80" r="60"
+                    fill="none"
+                    [attr.stroke]="s.color"
+                    stroke-width="28"
+                    [attr.stroke-dasharray]="s.dasharray"
+                    [attr.stroke-dashoffset]="s.dashoffset"
+                    class="donut-seg"
+                    [class.donut-seg--dim]="selectedResource !== null && selectedResource !== s.name"
+                    (click)="selectResource(s.name)"
+                    [attr.aria-label]="s.name">
+            </circle>
+          </g>
+          <!-- Centre -->
+          <text x="80" y="74" text-anchor="middle" class="donut-center-val">{{ totalSessions }}</text>
+          <text x="80" y="90" text-anchor="middle" class="donut-center-label">sessions</text>
+        </svg>
+
+        <!-- Legend -->
+        <div class="donut-legend">
+          <div *ngFor="let s of donutSegments()" class="legend-item"
+               [class.legend-item--active]="selectedResource === s.name"
+               [class.legend-item--dim]="selectedResource !== null && selectedResource !== s.name"
+               (click)="selectResource(s.name)">
+            <span class="legend-dot" [style.background]="s.color"></span>
+            <mat-icon class="legend-type-icon" [style.color]="s.color">{{ typeIcon(s.type) }}</mat-icon>
+            <span class="legend-name" [matTooltip]="s.name">{{ s.name }}</span>
+            <span class="legend-count" [style.color]="s.color">{{ s.count }}</span>
+          </div>
+        </div>
+      </div>
+
+      <ng-template #noDonutData>
+        <div class="chart-empty">
+          <mat-icon>donut_large</mat-icon>
+          <p>Aucune session enregistrée</p>
+        </div>
+      </ng-template>
+    </div>
+
+  </div><!-- /charts-row -->
+
+  <!-- ─── Day sessions panel ─── -->
+  <div class="day-panel" *ngIf="selectedDay" [@slideDown]>
+    <div class="day-panel-header">
+      <mat-icon>event</mat-icon>
+      <span class="day-panel-title">{{ selectedDayLabel() }}</span>
+      <span class="day-panel-badge" *ngIf="filteredDaySessions.length > 0">
+        {{ filteredDaySessions.length }} session(s)
+      </span>
+      <span class="day-panel-filter" *ngIf="selectedResource">
+        <mat-icon>filter_alt</mat-icon> {{ selectedResource }}
+        <button mat-icon-button (click)="selectedResource = null">
+          <mat-icon>close</mat-icon>
+        </button>
+      </span>
+    </div>
+
+    <div class="spinner-wrap" *ngIf="daySessionsLoading">
+      <mat-spinner diameter="32"></mat-spinner>
+    </div>
+
+    <div *ngIf="!daySessionsLoading">
+      <div *ngIf="filteredDaySessions.length === 0" class="day-panel-empty">
+        <mat-icon>search_off</mat-icon>
+        <p>{{ selectedResource ? 'Aucune session pour cette ressource' : 'Aucune session ce jour' }}</p>
+      </div>
+
+      <div class="day-session-list" *ngIf="filteredDaySessions.length > 0">
+        <div *ngFor="let s of filteredDaySessions" class="day-session-row"
+             [class.day-session-row--clickable]="s.requestId"
+             (click)="openSession(s)">
+
+          <!-- Resource icon -->
+          <div class="ds-icon" [style.background]="typeColor(s.resourceType) + '18'"
+               [style.border-color]="typeColor(s.resourceType) + '40'">
+            <mat-icon [style.color]="typeColor(s.resourceType)">{{ typeIcon(s.resourceType) }}</mat-icon>
+          </div>
+
+          <!-- Resource + user -->
+          <div class="ds-main">
+            <span class="ds-resource">{{ s.resourceName }}</span>
+            <span class="ds-user">
+              <mat-icon>person</mat-icon> {{ s.userName }}
+            </span>
+          </div>
+
+          <!-- Type badge -->
+          <span class="ds-type-badge" [style.color]="typeColor(s.resourceType)"
+                [style.border-color]="typeColor(s.resourceType) + '40'">
+            {{ s.resourceType }}
+          </span>
+
+          <!-- Time -->
+          <div class="ds-meta">
+            <span class="ds-time">
+              <mat-icon>schedule</mat-icon>
+              {{ s.startTime | date:'HH:mm' }}
+            </span>
+            <span class="ds-duration" *ngIf="s.durationHours">{{ s.durationHours }}h</span>
+            <span class="ds-duration" *ngIf="!s.durationHours">—</span>
+          </div>
+
+          <!-- Status -->
+          <span class="ds-status"
+                [class.ds-status--active]="s.status === 'APPROVED'"
+                [class.ds-status--ended]="s.status === 'EXPIRED' || s.status === 'REVOKED'">
+            {{ statusLabel(s.status) }}
+          </span>
+
+          <!-- Navigate hint -->
+          <mat-icon class="ds-nav-icon" *ngIf="s.requestId">open_in_new</mat-icon>
+        </div>
+      </div>
+    </div>
+  </div><!-- /day-panel -->
+
+  <!-- ─── Overlay cards ─── -->
+
+  <!-- Overlay: Utilisateurs -->
+  <div class="card-overlay" *ngIf="activeCard === 'users'" [@overlay]>
+    <div class="overlay-header">
+      <div class="overlay-icon overlay-icon--blue"><mat-icon>group</mat-icon></div>
+      <div class="overlay-title-block">
+        <span class="overlay-title">Utilisateurs du tenant</span>
+        <span class="overlay-sub">{{ tenant?.tenantName }}</span>
+      </div>
+      <button mat-icon-button (click)="closeCard()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="overlay-body">
+      <div class="overlay-kpi-row">
+        <div class="overlay-kpi">
+          <span class="overlay-kpi-val">{{ userCount }}</span>
+          <span class="overlay-kpi-label">Actuels</span>
+        </div>
+        <div class="overlay-kpi">
+          <span class="overlay-kpi-val">{{ tenant?.maxUsers }}</span>
+          <span class="overlay-kpi-label">Maximum</span>
+        </div>
+        <div class="overlay-kpi" [class.kpi-warn]="userPercent() >= 80">
+          <span class="overlay-kpi-val">{{ userPercent() }}%</span>
+          <span class="overlay-kpi-label">Utilisé</span>
+        </div>
+      </div>
+      <div class="overlay-bar-wrap">
+        <div class="overlay-bar">
+          <div class="overlay-bar-fill"
+            [style.width.%]="userPercent()"
+            [class.bar-warn]="userPercent() >= 80"
+            [class.bar-full]="userPercent() >= 100">
+          </div>
+        </div>
+        <span class="overlay-bar-label" *ngIf="userPercent() >= 80" style="color:#e8a020">
+          <mat-icon style="font-size:13px">warning</mat-icon>
+          {{ userPercent() >= 100 ? 'Quota atteint' : 'Quota presque atteint' }}
+        </span>
+      </div>
+      <div class="overlay-info-row">
+        <mat-icon style="color:var(--accent-teal)">info_outline</mat-icon>
+        Accédez à la page Utilisateurs pour inviter, importer depuis l'AD ou gérer les membres.
+      </div>
+    </div>
+    <div class="overlay-footer">
+      <button mat-stroked-button (click)="closeCard()">Fermer</button>
+      <button mat-raised-button color="primary" (click)="navigateTo('/tenant-admin/users')">
+        <mat-icon>group</mat-icon> Voir les membres
+      </button>
+    </div>
+  </div>
+
+  <!-- Overlay: Ressources -->
+  <div class="card-overlay" *ngIf="activeCard === 'resources'" [@overlay]>
+    <div class="overlay-header">
+      <div class="overlay-icon overlay-icon--teal"><mat-icon>dns</mat-icon></div>
+      <div class="overlay-title-block">
+        <span class="overlay-title">Ressources PAM</span>
+        <span class="overlay-sub">{{ activeResources() }} actives / {{ resourceCount }} total</span>
+      </div>
+      <button mat-icon-button (click)="closeCard()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="overlay-body">
+      <div class="overlay-kpi-row">
+        <div class="overlay-kpi">
+          <span class="overlay-kpi-val" style="color:#00c4a0">{{ activeResources() }}</span>
+          <span class="overlay-kpi-label">Actives</span>
+        </div>
+        <div class="overlay-kpi">
+          <span class="overlay-kpi-val" style="color:#ef4444">{{ resourceCount - activeResources() }}</span>
+          <span class="overlay-kpi-label">Inactives</span>
+        </div>
+        <div class="overlay-kpi" *ngIf="tenant?.maxResources" [class.kpi-warn]="resourcePercent() >= 80">
+          <span class="overlay-kpi-val">{{ tenant!.maxResources }}</span>
+          <span class="overlay-kpi-label">Limite</span>
+        </div>
+        <div class="overlay-kpi" *ngIf="!tenant?.maxResources">
+          <span class="overlay-kpi-val" style="opacity:.5">∞</span>
+          <span class="overlay-kpi-label">Illimité</span>
+        </div>
+      </div>
+      <div class="overlay-bar-wrap" *ngIf="tenant?.maxResources">
+        <div class="overlay-bar">
+          <div class="overlay-bar-fill"
+            [style.width.%]="resourcePercent()"
+            [class.bar-warn]="resourcePercent() >= 80"
+            [class.bar-full]="resourcePercent() >= 100">
+          </div>
+        </div>
+        <span class="overlay-bar-label" *ngIf="resourcePercent() >= 80" style="color:#e8a020">
+          <mat-icon style="font-size:13px">warning</mat-icon>
+          {{ resourcePercent() >= 100 ? 'Quota ressources atteint' : 'Quota ressources presque atteint' }}
+        </span>
+      </div>
+
+      <div class="overlay-type-list" *ngIf="resourcesByType().length > 0">
+        <div class="overlay-type-label">Répartition par type</div>
+        <div *ngFor="let t of resourcesByType()" class="overlay-type-row">
+          <mat-icon [style.color]="t.color" style="font-size:16px;width:16px;height:16px">{{ t.icon }}</mat-icon>
+          <span class="overlay-type-name">{{ t.type }}</span>
+          <div class="overlay-type-bar-wrap">
+            <div class="overlay-type-bar">
+              <div class="overlay-type-bar-fill"
+                [style.width.%]="resourceCount > 0 ? (t.count / resourceCount * 100) : 0"
+                [style.background]="t.color + '80'">
+              </div>
+            </div>
+          </div>
+          <span class="overlay-type-count" [style.color]="t.color">{{ t.count }}</span>
+        </div>
+      </div>
+
+      <div class="overlay-empty" *ngIf="resourcesByType().length === 0">
+        <mat-icon>dns</mat-icon>
+        <p>Aucune ressource configurée</p>
+      </div>
+    </div>
+    <div class="overlay-footer">
+      <button mat-stroked-button (click)="closeCard()">Fermer</button>
+      <button mat-raised-button color="primary" (click)="navigateTo('/tenant-admin/resources')">
+        <mat-icon>dns</mat-icon> Gérer les ressources
+      </button>
+    </div>
+  </div>
+
+  <!-- Overlay: Demandes en attente -->
+  <div class="card-overlay" *ngIf="activeCard === 'requests'" [@overlay]>
+    <div class="overlay-header">
+      <div class="overlay-icon overlay-icon--amber"><mat-icon>pending_actions</mat-icon></div>
+      <div class="overlay-title-block">
+        <span class="overlay-title">Demandes en attente</span>
+        <span class="overlay-sub">{{ pendingCount }} demande(s) nécessitent une action</span>
+      </div>
+      <button mat-icon-button (click)="closeCard()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="overlay-body">
+      <div *ngIf="recentRequests.length === 0" class="overlay-empty">
+        <mat-icon style="color:#00c4a0">task_alt</mat-icon>
+        <p>Aucune demande en attente</p>
+      </div>
+      <div class="overlay-request-list" *ngIf="recentRequests.length > 0">
+        <div *ngFor="let r of recentRequests" class="overlay-request-item">
+          <div class="overlay-req-avatar">{{ r.requesterUsername[0] | uppercase }}</div>
+          <div class="overlay-req-info">
+            <strong>{{ r.requesterUsername }}</strong>
+            <span>→ <span class="mono">{{ r.resourceName }}</span></span>
+          </div>
+          <div class="overlay-req-meta">
+            <span class="duration-tag">{{ r.durationHours }}h</span>
+            <span class="overlay-req-date">{{ r.requestedAt | date:'dd/MM HH:mm' }}</span>
+          </div>
+        </div>
+        <div *ngIf="pendingCount > recentRequests.length" class="overlay-more-hint">
+          + {{ pendingCount - recentRequests.length }} autre(s) demande(s)
+        </div>
+      </div>
+    </div>
+    <div class="overlay-footer">
+      <button mat-stroked-button (click)="closeCard()">Fermer</button>
+      <button mat-raised-button color="primary" (click)="navigateTo('/tenant-admin/requests')">
+        <mat-icon>pending_actions</mat-icon> Traiter les demandes
+      </button>
+    </div>
+  </div>
+
+  <!-- Overlay: Services -->
+  <div class="card-overlay" *ngIf="activeCard === 'services' && tenant" [@overlay]>
+    <div class="overlay-header">
+      <div class="overlay-icon overlay-icon--purple"><mat-icon>corporate_fare</mat-icon></div>
+      <div class="overlay-title-block">
+        <span class="overlay-title">Configuration du tenant</span>
+        <span class="overlay-sub">{{ tenant.tenantName }}</span>
+      </div>
+      <button mat-icon-button (click)="closeCard()"><mat-icon>close</mat-icon></button>
+    </div>
+    <div class="overlay-body">
+      <div class="overlay-config-row">
+        <span class="overlay-config-label">Domaine email</span>
+        <span *ngIf="tenant.domainConfigured" class="overlay-config-val domain-ok">
+          <mat-icon>check</mat-icon> {{ tenant.domain }}
+        </span>
+        <span *ngIf="!tenant.domainConfigured" class="overlay-config-val domain-warn">
+          <mat-icon>warning</mat-icon> Non configuré
+        </span>
+      </div>
+      <div class="overlay-config-row">
+        <span class="overlay-config-label">Statut</span>
+        <span [class]="'status-badge ' + (tenant.isActive ? 'status-active' : 'status-rejected')">
+          {{ tenant.isActive ? 'Actif' : 'Inactif' }}
+        </span>
+      </div>
+
+      <div class="overlay-services-section">
+        <div class="overlay-type-label">Services activés</div>
+        <div class="overlay-services-grid">
+          <div *ngFor="let s of tenant.services" class="overlay-service-item">
+            <mat-icon>{{ serviceIcon(s) }}</mat-icon>
+            <span>{{ s }}</span>
+          </div>
+          <div *ngIf="tenant.services.length === 0" class="overlay-empty-hint">
+            Aucun service activé
+          </div>
+        </div>
+      </div>
+
+      <div class="overlay-info-row">
+        <mat-icon style="color:var(--accent-teal)">info_outline</mat-icon>
+        Configurez l'Active Directory pour importer des utilisateurs depuis votre annuaire d'entreprise.
+      </div>
+    </div>
+    <div class="overlay-footer">
+      <button mat-stroked-button (click)="closeCard()">Fermer</button>
+      <button mat-raised-button color="primary" (click)="navigateTo('/tenant-admin/ad-config')">
+        <mat-icon>corporate_fare</mat-icon> Config Active Directory
+      </button>
+    </div>
+  </div>
+
+  <!-- Backdrop -->
+  <div class="overlay-backdrop" *ngIf="activeCard !== null" (click)="closeCard()"></div>
+
+</div>
+
+<!-- ── Audit log retention settings ─────────────────────────────────── -->
+<div class="retention-card" *ngIf="tenant">
+  <div class="retention-header">
+    <mat-icon>auto_delete</mat-icon>
+    <div>
+      <div class="retention-title">Rétention des journaux d'audit</div>
+      <div class="retention-subtitle">Les logs plus anciens que la période choisie seront supprimés automatiquement chaque nuit.</div>
+    </div>
+  </div>
+
+  <div class="retention-options">
+    <button class="retention-option"
+            [class.retention-option--active]="retentionDays === 7"
+            (click)="retentionDays = 7">
+      <span class="retention-value">7</span>
+      <span class="retention-unit">jours</span>
+    </button>
+    <button class="retention-option"
+            [class.retention-option--active]="retentionDays === 14"
+            (click)="retentionDays = 14">
+      <span class="retention-value">14</span>
+      <span class="retention-unit">jours</span>
+    </button>
+    <button class="retention-option"
+            [class.retention-option--active]="retentionDays === 30"
+            (click)="retentionDays = 30">
+      <span class="retention-value">30</span>
+      <span class="retention-unit">jours</span>
+    </button>
+  </div>
+
+  <div class="retention-actions">
+    <button mat-raised-button color="primary"
+            [disabled]="savingRetention || retentionDays === tenant.auditLogRetentionDays"
+            (click)="saveRetention()">
+      <mat-icon>save</mat-icon>
+      {{ savingRetention ? 'Enregistrement...' : 'Appliquer' }}
+    </button>
+    <span class="retention-saved" *ngIf="retentionSaved">
+      <mat-icon>check_circle</mat-icon> Enregistré
+    </span>
+    <span class="retention-current" *ngIf="!retentionSaved">
+      Actuel : {{ tenant.auditLogRetentionDays }} jours
+    </span>
+  </div>
+</div>

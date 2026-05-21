@@ -1,0 +1,103 @@
+<div class="login-page">
+  <div class="login-card">
+
+    <!-- Logo / Brand -->
+    <div class="brand">
+      <div class="brand-icon"><mat-icon>shield</mat-icon></div>
+      <h1>IAM-PAM</h1>
+      <p>Plateforme de gestion des accès sécurisés</p>
+    </div>
+
+    <!-- ── Mode: Choisir ──────────────────────────────────────── -->
+    <ng-container *ngIf="mode === 'choose'">
+      <div class="options">
+
+        <button class="opt-btn opt-btn--primary" (click)="loginWithPassword()">
+          <div class="opt-icon"><mat-icon>lock</mat-icon></div>
+          <div class="opt-text">
+            <strong>Identifiants</strong>
+            <span>Connexion avec nom d'utilisateur et mot de passe</span>
+          </div>
+          <mat-icon class="opt-arrow">arrow_forward</mat-icon>
+        </button>
+
+        <div class="opt-divider"><span>ou</span></div>
+
+        <button class="opt-btn opt-btn--face" (click)="goToFaceLogin()" [disabled]="!modelsLoaded">
+          <div class="opt-icon face-icon"><mat-icon>face_unlock</mat-icon></div>
+          <div class="opt-text">
+            <strong>Reconnaissance faciale</strong>
+            <span>{{ modelsLoaded ? 'Connexion sans mot de passe' : 'Chargement des modèles…' }}</span>
+          </div>
+          <mat-icon class="opt-arrow">arrow_forward</mat-icon>
+        </button>
+
+      </div>
+    </ng-container>
+
+    <!-- ── Mode: Saisie username pour face login ──────────────── -->
+    <ng-container *ngIf="mode === 'face-setup'">
+      <div class="face-setup" [formGroup]="faceForm">
+        <div class="fv-icon"><mat-icon>face_unlock</mat-icon></div>
+        <h3>Connexion faciale</h3>
+        <p>Saisissez votre nom d'utilisateur, puis activez la caméra.</p>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Nom d'utilisateur</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <input matInput formControlName="username" autocomplete="username">
+          <mat-error>Champ obligatoire</mat-error>
+        </mat-form-field>
+
+        <div *ngIf="errorMsg" class="error-msg">
+          <mat-icon>error</mat-icon> {{ errorMsg }}
+        </div>
+
+        <div class="setup-actions">
+          <button mat-button (click)="back()"><mat-icon>arrow_back</mat-icon> Retour</button>
+          <button mat-raised-button color="primary" (click)="startFaceCamera()">
+            <mat-icon>videocam</mat-icon> Activer la caméra
+          </button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── Mode: Capture ─────────────────────────────────────── -->
+    <ng-container *ngIf="mode === 'face-capture'">
+      <div class="face-capture">
+        <div class="video-container">
+          <video #videoEl autoplay muted playsinline class="camera-video"></video>
+          <canvas #canvasEl class="camera-canvas"></canvas>
+
+          <!-- Auto-login progress ring — fills while face is held steady -->
+          <div class="face-indicator" [class.face-indicator--detected]="faceDetected">
+            <svg *ngIf="faceDetected" class="progress-ring" viewBox="0 0 36 36">
+              <circle class="progress-ring__bg" cx="18" cy="18" r="15.9"/>
+              <circle class="progress-ring__fill" cx="18" cy="18" r="15.9"
+                      [style.stroke-dashoffset]="100 - autoLoginProgress"/>
+            </svg>
+            <mat-icon>{{ faceDetected ? 'face_unlock' : 'radio_button_unchecked' }}</mat-icon>
+            <span>{{ faceDetected ? 'Maintien du visage…' : 'Recherche du visage…' }}</span>
+          </div>
+        </div>
+
+        <div *ngIf="errorMsg" class="error-msg">
+          <mat-icon>error</mat-icon> {{ errorMsg }}
+        </div>
+
+        <div class="capture-actions">
+          <button mat-button (click)="back()"><mat-icon>arrow_back</mat-icon> Retour</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ── Mode: Processing ──────────────────────────────────── -->
+    <ng-container *ngIf="mode === 'face-processing'">
+      <div class="processing">
+        <mat-spinner diameter="56"></mat-spinner>
+        <p>Vérification du visage…</p>
+      </div>
+    </ng-container>
+
+  </div>
+</div>

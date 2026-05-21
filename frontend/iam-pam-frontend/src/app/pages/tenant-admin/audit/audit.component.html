@@ -1,0 +1,116 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Logs d'audit</h1>
+      <p class="page-subtitle">{{ (page?.totalElements ?? 0) }} événement(s) enregistré(s)</p>
+    </div>
+    <mat-icon class="audit-icon">security</mat-icon>
+  </div>
+
+  <!-- Barre de filtres -->
+  <div class="filter-bar">
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Rechercher un utilisateur</mat-label>
+      <mat-icon matPrefix style="margin-right:6px">person_search</mat-icon>
+      <input matInput [(ngModel)]="searchUsername" placeholder="username...">
+      <button *ngIf="searchUsername" matSuffix mat-icon-button (click)="searchUsername = ''">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field filter-field--select">
+      <mat-label>Type d'action</mat-label>
+      <mat-select [(ngModel)]="filterAction">
+        <mat-option value="">Toutes les actions</mat-option>
+        <mat-optgroup label="Accès">
+          <mat-option value="ACCESS_REQUESTED">ACCESS_REQUESTED</mat-option>
+          <mat-option value="ACCESS_APPROVED">ACCESS_APPROVED</mat-option>
+          <mat-option value="ACCESS_REJECTED">ACCESS_REJECTED</mat-option>
+          <mat-option value="ACCESS_REVOKED">ACCESS_REVOKED</mat-option>
+          <mat-option value="ACCESS_EXPIRED">ACCESS_EXPIRED</mat-option>
+        </mat-optgroup>
+        <mat-optgroup label="Ressources">
+          <mat-option value="RESOURCE_CREATED">RESOURCE_CREATED</mat-option>
+          <mat-option value="RESOURCE_UPDATED">RESOURCE_UPDATED</mat-option>
+          <mat-option value="RESOURCE_DELETED">RESOURCE_DELETED</mat-option>
+        </mat-optgroup>
+        <mat-optgroup label="Utilisateurs">
+          <mat-option value="USER_IMPORTED">USER_IMPORTED</mat-option>
+          <mat-option value="USER_REMOVED">USER_REMOVED</mat-option>
+        </mat-optgroup>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-stroked-button *ngIf="isFiltering" (click)="clearFilters()" class="clear-btn">
+      <mat-icon>filter_list_off</mat-icon> Effacer
+    </button>
+
+    <span class="filter-count" *ngIf="isFiltering">
+      {{ filteredLogs.length }} résultat(s)
+    </span>
+  </div>
+
+  <mat-card style="padding:0;overflow:hidden">
+    <div *ngIf="loading" class="spinner-center"><mat-spinner diameter="36"></mat-spinner></div>
+
+    <table mat-table [dataSource]="filteredLogs" *ngIf="!loading" class="full-width">
+
+      <ng-container matColumnDef="timestamp">
+        <th mat-header-cell *matHeaderCellDef>Date / Heure</th>
+        <td mat-cell *matCellDef="let log" class="date-cell">
+          <span class="date-main">{{ log.timestamp | date:'dd/MM/yyyy' }}</span>
+          <span class="date-time">{{ log.timestamp | date:'HH:mm:ss' }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="username">
+        <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+        <td mat-cell *matCellDef="let log">
+          <div class="user-cell">
+            <div class="user-avatar-xs">{{ log.username[0] | uppercase }}</div>
+            <strong>{{ log.username }}</strong>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef>Action</th>
+        <td mat-cell *matCellDef="let log">
+          <span [class]="'action-badge ' + actionClass(log.action)">
+            <mat-icon>{{ actionIcon(log.action) }}</mat-icon>
+            {{ log.action }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="resource">
+        <th mat-header-cell *matHeaderCellDef>Ressource</th>
+        <td mat-cell *matCellDef="let log">
+          <span class="resource-tag" *ngIf="log.resource">{{ log.resource }}</span>
+          <span *ngIf="!log.resource" style="color:var(--text-tertiary)">—</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="details">
+        <th mat-header-cell *matHeaderCellDef>Détails</th>
+        <td mat-cell *matCellDef="let log" class="details-cell">{{ log.details || '—' }}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="log-row"></tr>
+    </table>
+
+    <div *ngIf="!loading && filteredLogs.length === 0" class="empty-state">
+      <mat-icon>{{ isFiltering ? 'search_off' : 'security' }}</mat-icon>
+      <p>{{ isFiltering ? 'Aucun résultat pour ces filtres' : 'Aucun log d\'audit' }}</p>
+      <button mat-stroked-button *ngIf="isFiltering" (click)="clearFilters()">Effacer les filtres</button>
+    </div>
+
+    <mat-paginator *ngIf="page && !isFiltering"
+      [length]="page.totalElements"
+      [pageSize]="pageSize"
+      [pageSizeOptions]="[10, 20, 50]"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  </mat-card>
+</div>

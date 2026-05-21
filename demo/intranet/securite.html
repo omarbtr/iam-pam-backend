@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Sécurité — ESPRIT Corp Intranet</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">ESPRIT<span>Corp</span></div>
+  <div class="topbar-badge">Réseau Interne</div>
+  <nav class="topbar-nav">
+    <a href="index.html">Accueil</a>
+    <a href="serveurs.html">Infrastructure</a>
+    <a href="tickets.html">Tickets</a>
+    <a href="securite.html" class="active">Sécurité</a>
+    <div class="avatar">AB</div>
+  </nav>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <a href="index.html"    class="sidebar-item">📊 Tableau de bord</a>
+    <a href="serveurs.html" class="sidebar-item">🖥️ Serveurs</a>
+    <a href="securite.html" class="sidebar-item active">🔐 Sécurité</a>
+
+    <div class="sidebar-section">Gestion</div>
+    <a href="tickets.html"  class="sidebar-item">🎫 Tickets <span class="badge-count">3</span></a>
+    <a href="serveurs.html" class="sidebar-item">📦 Applications</a>
+    <a href="securite.html" class="sidebar-item">📋 Rapports</a>
+  </aside>
+
+  <main class="main">
+    <div class="page-title">Centre de Sécurité</div>
+    <div class="page-subtitle">Supervision de la sécurité du réseau interne — ESPRIT Corp SOC</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-label">Niveau de risque</div>
+        <div class="kpi-value" style="color:#16a34a">Faible</div>
+        <div class="kpi-change up">Aucune menace active</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Connexions actives</div>
+        <div class="kpi-value">47</div>
+        <div class="kpi-change">Utilisateurs en ligne</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Tentatives bloquées (24h)</div>
+        <div class="kpi-value">128</div>
+        <div class="kpi-change down">↑ 12 vs hier</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Certificats valides</div>
+        <div class="kpi-value">6/7</div>
+        <div class="kpi-change">1 expire bientôt</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Journaux d'accès récents</div>
+          <a href="#" class="card-action">Voir tout →</a>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Horodatage</th><th>Utilisateur</th><th>Action</th><th>Ressource</th><th>Résultat</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="font-size:12px;color:#64748b;white-space:nowrap">14:32:07</td>
+              <td><strong>a.benali</strong></td>
+              <td>Connexion SSH</td>
+              <td><code>app-srv-01</code></td>
+              <td><span class="pill ok">Autorisé</span></td>
+            </tr>
+            <tr>
+              <td style="font-size:12px;color:#64748b;white-space:nowrap">14:29:55</td>
+              <td><strong>f.chabert</strong></td>
+              <td>Accès RDP</td>
+              <td><code>web-prod-01</code></td>
+              <td><span class="pill ok">Autorisé</span></td>
+            </tr>
+            <tr>
+              <td style="font-size:12px;color:#64748b;white-space:nowrap">14:18:42</td>
+              <td><strong>unknown</strong></td>
+              <td>Connexion SSH</td>
+              <td><code>db-prod-01</code></td>
+              <td><span class="pill err">Refusé</span></td>
+            </tr>
+            <tr>
+              <td style="font-size:12px;color:#64748b;white-space:nowrap">14:11:30</td>
+              <td><strong>m.dupont</strong></td>
+              <td>Accès Web</td>
+              <td><code>intranet</code></td>
+              <td><span class="pill ok">Autorisé</span></td>
+            </tr>
+            <tr>
+              <td style="font-size:12px;color:#64748b;white-space:nowrap">14:05:18</td>
+              <td><strong>unknown</strong></td>
+              <td>Brute-force</td>
+              <td><code>vpn-gw-01</code></td>
+              <td><span class="pill err">Bloqué</span></td>
+            </tr>
+            <tr>
+              <td style="font-size:12px;color:#64748b;white-space:nowrap">13:58:01</td>
+              <td><strong>k.rousseau</strong></td>
+              <td>Connexion SSH</td>
+              <td><code>db-prod-01</code></td>
+              <td><span class="pill ok">Autorisé</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">État des certificats SSL</div>
+          <a href="#" class="card-action">Renouveler →</a>
+        </div>
+        <div class="service-list">
+          <div class="service-row">
+            <div class="service-icon" style="background:#f0fdf4">🔒</div>
+            <div>
+              <div class="service-name">web-prod-01</div>
+              <div class="service-host">Expire le 14/08/2026</div>
+            </div>
+            <div class="service-status"><span class="pill ok">Valide</span></div>
+          </div>
+          <div class="service-row">
+            <div class="service-icon" style="background:#fffbeb">⚠️</div>
+            <div>
+              <div class="service-name">api-gateway</div>
+              <div class="service-host">Expire le 16/05/2026</div>
+            </div>
+            <div class="service-status"><span class="pill warn">12 jours</span></div>
+          </div>
+          <div class="service-row">
+            <div class="service-icon" style="background:#f0fdf4">🔒</div>
+            <div>
+              <div class="service-name">mail-srv-01</div>
+              <div class="service-host">Expire le 02/11/2026</div>
+            </div>
+            <div class="service-status"><span class="pill ok">Valide</span></div>
+          </div>
+          <div class="service-row">
+            <div class="service-icon" style="background:#f0fdf4">🔒</div>
+            <div>
+              <div class="service-name">vpn-gw-01</div>
+              <div class="service-host">Expire le 29/09/2026</div>
+            </div>
+            <div class="service-status"><span class="pill ok">Valide</span></div>
+          </div>
+          <div class="service-row">
+            <div class="service-icon" style="background:#f0fdf4">🔒</div>
+            <div>
+              <div class="service-name">intranet</div>
+              <div class="service-host">Expire le 07/01/2027</div>
+            </div>
+            <div class="service-status"><span class="pill ok">Valide</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

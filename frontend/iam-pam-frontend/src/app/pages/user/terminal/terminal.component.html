@@ -1,0 +1,30 @@
+<div class="terminal-page">
+
+  <!-- Top bar -->
+  <div class="terminal-topbar">
+    <div class="terminal-title">
+      <mat-icon>terminal</mat-icon>
+      <span>{{ resourceName }}</span>
+      <span class="session-id">#{{ requestId }}</span>
+    </div>
+
+    <div class="terminal-status">
+      <span class="status-dot" [class.dot--connected]="connected" [class.dot--connecting]="connecting" [class.dot--error]="!!connectionError"></span>
+      <span *ngIf="connecting">Connexion...</span>
+      <span *ngIf="connected">Connecté</span>
+      <span *ngIf="!connecting && !connected && !connectionError">Déconnecté</span>
+      <span *ngIf="connectionError" class="error-text">{{ connectionError }}</span>
+    </div>
+
+    <button mat-stroked-button class="disconnect-btn" (click)="disconnect()">
+      <mat-icon>power_settings_new</mat-icon>
+      Terminer
+    </button>
+  </div>
+
+  <!-- xterm.js container -->
+  <div class="terminal-wrap">
+    <div #terminalContainer class="xterm-container"></div>
+  </div>
+
+</div>

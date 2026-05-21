@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Tickets — ESPRIT Corp Intranet</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">ESPRIT<span>Corp</span></div>
+  <div class="topbar-badge">Réseau Interne</div>
+  <nav class="topbar-nav">
+    <a href="index.html">Accueil</a>
+    <a href="serveurs.html">Infrastructure</a>
+    <a href="tickets.html" class="active">Tickets</a>
+    <a href="securite.html">Sécurité</a>
+    <div class="avatar">AB</div>
+  </nav>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <a href="index.html"    class="sidebar-item">📊 Tableau de bord</a>
+    <a href="serveurs.html" class="sidebar-item">🖥️ Serveurs</a>
+    <a href="securite.html" class="sidebar-item">🔐 Sécurité</a>
+
+    <div class="sidebar-section">Gestion</div>
+    <a href="tickets.html"  class="sidebar-item active">🎫 Tickets <span class="badge-count">3</span></a>
+    <a href="serveurs.html" class="sidebar-item">📦 Applications</a>
+    <a href="securite.html" class="sidebar-item">📋 Rapports</a>
+  </aside>
+
+  <main class="main">
+    <div class="page-title">Helpdesk & Tickets</div>
+    <div class="page-subtitle">Gestion des incidents et demandes de support — ESPRIT Corp IT</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card red">
+        <div class="kpi-label">Ouverts</div>
+        <div class="kpi-value">7</div>
+        <div class="kpi-change down">dont 1 critique</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">En cours</div>
+        <div class="kpi-value">4</div>
+        <div class="kpi-change">Assignés à un technicien</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Résolus (7j)</div>
+        <div class="kpi-value">23</div>
+        <div class="kpi-change up">↑ 5 vs semaine préc.</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">Temps moyen</div>
+        <div class="kpi-value">2.4<small style="font-size:14px">h</small></div>
+        <div class="kpi-change up">↓ 18min vs objectif</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Tickets actifs</div>
+        <a href="#" class="btn btn-primary" style="font-size:12px;padding:5px 14px">+ Nouveau ticket</a>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Ticket</th>
+            <th>Titre</th>
+            <th>Demandeur</th>
+            <th>Assigné à</th>
+            <th>Catégorie</th>
+            <th>Priorité</th>
+            <th>Statut</th>
+            <th>Créé le</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#64748b;font-size:12px">#1042</td>
+            <td><a href="#" style="color:#1d4ed8;text-decoration:none;font-weight:500">Espace disque &lt; 10% sur /var (app-srv-03)</a></td>
+            <td>Système automatique</td>
+            <td><span style="background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">M. Dupont</span></td>
+            <td>Infrastructure</td>
+            <td><span class="pill err">Critique</span></td>
+            <td><span class="pill warn">En cours</span></td>
+            <td style="font-size:12px;color:#64748b">Aujourd'hui 09:14</td>
+          </tr>
+          <tr>
+            <td style="color:#64748b;font-size:12px">#1041</td>
+            <td><a href="#" style="color:#1d4ed8;text-decoration:none;font-weight:500">Certificat SSL expire dans 12 jours (web-prod-01)</a></td>
+            <td>Système automatique</td>
+            <td><span style="background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">L. Martin</span></td>
+            <td>Sécurité</td>
+            <td><span class="pill warn">Moyenne</span></td>
+            <td><span class="pill info">Assigné</span></td>
+            <td style="font-size:12px;color:#64748b">Hier 16:30</td>
+          </tr>
+          <tr>
+            <td style="color:#64748b;font-size:12px">#1040</td>
+            <td><a href="#" style="color:#1d4ed8;text-decoration:none;font-weight:500">VPN dégradé — latence > 200ms pour 3 utilisateurs</a></td>
+            <td>A. Benali</td>
+            <td><span style="background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">M. Dupont</span></td>
+            <td>Réseau</td>
+            <td><span class="pill warn">Haute</span></td>
+            <td><span class="pill warn">En cours</span></td>
+            <td style="font-size:12px;color:#64748b">Hier 11:05</td>
+          </tr>
+          <tr>
+            <td style="color:#64748b;font-size:12px">#1038</td>
+            <td><a href="#" style="color:#1d4ed8;text-decoration:none;font-weight:500">Sauvegarde échouée — timeout sur db-prod-01</a></td>
+            <td>Système automatique</td>
+            <td><span style="background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">K. Rousseau</span></td>
+            <td>Données</td>
+            <td><span class="pill info">Basse</span></td>
+            <td><span class="pill ok">Résolu</span></td>
+            <td style="font-size:12px;color:#64748b">03/05 14:20</td>
+          </tr>
+          <tr>
+            <td style="color:#64748b;font-size:12px">#1037</td>
+            <td><a href="#" style="color:#1d4ed8;text-decoration:none;font-weight:500">Redémarrage inopiné du service nginx (mail-srv-01)</a></td>
+            <td>Système automatique</td>
+            <td><span style="background:#f0fdf4;color:#15803d;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">L. Martin</span></td>
+            <td>Infrastructure</td>
+            <td><span class="pill info">Basse</span></td>
+            <td><span class="pill ok">Résolu</span></td>
+            <td style="font-size:12px;color:#64748b">02/05 08:47</td>
+          </tr>
+          <tr>
+            <td style="color:#64748b;font-size:12px">#1035</td>
+            <td><a href="#" style="color:#1d4ed8;text-decoration:none;font-weight:500">Demande accès — partage réseau Comptabilité</a></td>
+            <td>F. Chabert</td>
+            <td><span style="background:#fefce8;color:#a16207;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:600">Non assigné</span></td>
+            <td>Accès</td>
+            <td><span class="pill info">Basse</span></td>
+            <td><span class="pill info">Ouvert</span></td>
+            <td style="font-size:12px;color:#64748b">01/05 10:15</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

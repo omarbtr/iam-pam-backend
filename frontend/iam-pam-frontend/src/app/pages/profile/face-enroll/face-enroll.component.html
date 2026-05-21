@@ -1,0 +1,69 @@
+<div class="enroll-wrap">
+
+  <!-- Loading models -->
+  <div *ngIf="state === 'loading-models'" class="enroll-state">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Chargement des modèles de reconnaissance faciale…</p>
+  </div>
+
+  <!-- Ready to start camera -->
+  <div *ngIf="state === 'ready'" class="enroll-state">
+    <div class="face-icon">
+      <mat-icon>face</mat-icon>
+    </div>
+    <h3>Enregistrement du visage</h3>
+    <p>Assurez-vous d'être dans un endroit bien éclairé et face à la caméra.</p>
+    <div class="enroll-actions">
+      <button mat-raised-button color="primary" (click)="startCamera()">
+        <mat-icon>videocam</mat-icon> Démarrer la caméra
+      </button>
+      <button mat-stroked-button (click)="cancel()">Annuler</button>
+    </div>
+  </div>
+
+  <!-- Camera active -->
+  <div *ngIf="state === 'capturing'" class="camera-wrap">
+    <div class="video-container">
+      <video #videoEl autoplay muted playsinline class="camera-video"></video>
+      <canvas #canvasEl class="camera-canvas"></canvas>
+      <div class="face-indicator" [class.face-indicator--detected]="faceDetected">
+        <mat-icon>{{ faceDetected ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+        {{ faceDetected ? 'Visage détecté' : 'En attente du visage…' }}
+      </div>
+    </div>
+    <div class="enroll-actions">
+      <button mat-raised-button color="primary" [disabled]="!faceDetected" (click)="captureAndEnroll()">
+        <mat-icon>how_to_reg</mat-icon> Enregistrer mon visage
+      </button>
+      <button mat-stroked-button (click)="cancel()">Annuler</button>
+    </div>
+  </div>
+
+  <!-- Processing -->
+  <div *ngIf="state === 'processing'" class="enroll-state">
+    <mat-spinner diameter="48"></mat-spinner>
+    <p>Analyse et enregistrement en cours…</p>
+  </div>
+
+  <!-- Success -->
+  <div *ngIf="state === 'success'" class="enroll-state enroll-state--success">
+    <div class="face-icon face-icon--success">
+      <mat-icon>check_circle</mat-icon>
+    </div>
+    <h3>Visage enregistré !</h3>
+    <p>La reconnaissance faciale est maintenant activée pour votre compte.</p>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="state === 'error'" class="enroll-state enroll-state--error">
+    <div class="face-icon face-icon--error">
+      <mat-icon>error_outline</mat-icon>
+    </div>
+    <p>{{ errorMsg }}</p>
+    <div class="enroll-actions">
+      <button mat-raised-button color="warn" (click)="retry()">Réessayer</button>
+      <button mat-stroked-button (click)="cancel()">Annuler</button>
+    </div>
+  </div>
+
+</div>

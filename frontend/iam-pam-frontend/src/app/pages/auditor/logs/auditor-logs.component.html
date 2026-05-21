@@ -1,0 +1,154 @@
+<div class="page-container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Journaux d'audit</h1>
+      <p class="page-subtitle mono" *ngIf="page">
+        {{ page.totalElements }} entrée(s) · Page {{ page.number + 1 }} / {{ page.totalPages }}
+      </p>
+    </div>
+    <button mat-raised-button color="primary" (click)="exportCsv()" [disabled]="exporting">
+      <mat-icon>{{ exporting ? 'hourglass_empty' : 'download' }}</mat-icon>
+      {{ exporting ? 'Export...' : 'Exporter CSV' }}
+    </button>
+  </div>
+
+  <!-- Action summary chips -->
+  <div class="summary-row" *ngIf="page && !loading">
+    <div *ngFor="let g of countByActionGroup()" class="summary-chip" [style.border-color]="g.color + '60'">
+      <span class="summary-dot" [style.background]="g.color"></span>
+      <span class="summary-label">{{ g.label }}</span>
+      <span class="summary-count" [style.color]="g.color">{{ g.count }}</span>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <mat-form-field appearance="outline" class="filter-field">
+      <mat-label>Rechercher un utilisateur</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [(ngModel)]="searchUsername" placeholder="username…"
+             (keyup.enter)="onFilterChange()" (change)="onFilterChange()">
+      <button mat-icon-button matSuffix *ngIf="searchUsername" (click)="searchUsername = ''; onFilterChange()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field filter-field--select">
+      <mat-label>Type d'action</mat-label>
+      <mat-icon matPrefix>filter_list</mat-icon>
+      <mat-select [(ngModel)]="filterAction" (ngModelChange)="onFilterChange()">
+        <mat-option value="">Toutes les actions</mat-option>
+        <mat-option *ngFor="let a of allActions" [value]="a">{{ a }}</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field filter-field--date">
+      <mat-label>Date de début</mat-label>
+      <mat-icon matPrefix>calendar_today</mat-icon>
+      <input matInput type="date" [(ngModel)]="dateFrom" (change)="onFilterChange()">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="filter-field filter-field--date">
+      <mat-label>Date de fin</mat-label>
+      <mat-icon matPrefix>event</mat-icon>
+      <input matInput type="date" [(ngModel)]="dateTo" (change)="onFilterChange()">
+    </mat-form-field>
+
+    <button mat-stroked-button *ngIf="isFiltering" (click)="clearFilters()" class="clear-btn">
+      <mat-icon>close</mat-icon> Effacer les filtres
+    </button>
+  </div>
+
+  <!-- Spinner -->
+  <div class="spinner-wrap" *ngIf="loading">
+    <mat-spinner diameter="40"></mat-spinner>
+  </div>
+
+  <!-- Table -->
+  <div class="table-wrap" *ngIf="!loading">
+    <table mat-table [dataSource]="filteredLogs" class="audit-table">
+
+      <!-- Timestamp -->
+      <ng-container matColumnDef="timestamp">
+        <th mat-header-cell *matHeaderCellDef>Horodatage</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="ts-date">{{ row.timestamp | date:'dd/MM/yyyy' }}</span>
+          <span class="ts-time">{{ row.timestamp | date:'HH:mm:ss' }}</span>
+        </td>
+      </ng-container>
+
+      <!-- Username -->
+      <ng-container matColumnDef="username">
+        <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+        <td mat-cell *matCellDef="let row">
+          <div class="user-cell">
+            <div class="user-avatar-sm">{{ row.username.charAt(0).toUpperCase() }}</div>
+            <span class="mono">{{ row.username }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Action -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef>Action</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="action-badge" [ngClass]="actionClass(row.action)">
+            <mat-icon>{{ actionIcon(row.action) }}</mat-icon>
+            {{ row.action }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Resource -->
+      <ng-container matColumnDef="resource">
+        <th mat-header-cell *matHeaderCellDef>Ressource</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="res-cell mono" *ngIf="row.resourceName || row.resource">
+            {{ row.resourceName || row.resource }}
+          </span>
+          <span class="empty-cell" *ngIf="!row.resourceName && !row.resource">—</span>
+        </td>
+      </ng-container>
+
+      <!-- Details -->
+      <ng-container matColumnDef="details">
+        <th mat-header-cell *matHeaderCellDef>Détails</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="detail-cell" [matTooltip]="row.details ?? ''" matTooltipShowDelay="400">
+            {{ row.details ? (row.details.length > 40 ? (row.details | slice:0:40) + '…' : row.details) : '—' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <!-- Result -->
+      <ng-container matColumnDef="result">
+        <th mat-header-cell *matHeaderCellDef>Résultat</th>
+        <td mat-cell *matCellDef="let row">
+          <span class="result-badge" [class.result--success]="row.result !== 'FAILURE'"
+                                     [class.result--failure]="row.result === 'FAILURE'">
+            <mat-icon>{{ row.result === 'FAILURE' ? 'error' : 'check' }}</mat-icon>
+            {{ row.result ?? 'SUCCESS' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+
+    <div class="empty-state" *ngIf="filteredLogs.length === 0">
+      <mat-icon>shield</mat-icon>
+      <p>{{ isFiltering ? 'Aucun résultat pour ces filtres' : 'Aucun log disponible' }}</p>
+    </div>
+
+    <mat-paginator *ngIf="page"
+      [length]="page.totalElements"
+      [pageSize]="pageSize"
+      [pageIndex]="currentPage"
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  </div>
+
+</div>

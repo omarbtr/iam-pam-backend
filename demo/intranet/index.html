@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Tableau de bord — ESPRIT Corp Intranet</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">ESPRIT<span>Corp</span></div>
+  <div class="topbar-badge">Réseau Interne</div>
+  <nav class="topbar-nav">
+    <a href="/" class="active">Accueil</a>
+    <a href="/serveurs.html">Infrastructure</a>
+    <a href="/tickets.html">Tickets</a>
+    <a href="/securite.html">Sécurité</a>
+    <a href="/profile">Mon Profil</a>
+    <div class="avatar">AB</div>
+  </nav>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <a href="/"              class="sidebar-item active">📊 Tableau de bord</a>
+    <a href="/serveurs.html" class="sidebar-item">🖥️ Serveurs</a>
+    <a href="/securite.html" class="sidebar-item">🔐 Sécurité</a>
+
+    <div class="sidebar-section">Gestion</div>
+    <a href="/tickets.html"  class="sidebar-item">🎫 Tickets <span class="badge-count">3</span></a>
+    <a href="/profile"       class="sidebar-item">👤 Mon Profil</a>
+    <a href="/securite.html" class="sidebar-item">📋 Rapports</a>
+  </aside>
+
+  <main class="main">
+    <div class="page-title">Tableau de bord IT</div>
+    <div class="page-subtitle">Dernière mise à jour : aujourd'hui à 14:32 — Réseau interne ESPRIT Corp</div>
+
+    <div class="alert-banner">
+      ⚠️ <strong>Maintenance planifiée :</strong>&nbsp;Le serveur <code>db-prod-02</code> sera en maintenance ce soir de 22h00 à 00h00.
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card blue">
+        <div class="kpi-label">Serveurs actifs</div>
+        <div class="kpi-value">14</div>
+        <div class="kpi-change up">↑ 2 depuis hier</div>
+      </div>
+      <div class="kpi-card green">
+        <div class="kpi-label">Disponibilité</div>
+        <div class="kpi-value">99.7<small style="font-size:14px">%</small></div>
+        <div class="kpi-change up">↑ 0.2% ce mois</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Alertes ouvertes</div>
+        <div class="kpi-value">3</div>
+        <div class="kpi-change">2 mineures / 1 critique</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Tickets en cours</div>
+        <div class="kpi-value">7</div>
+        <div class="kpi-change down">↓ 3 en attente</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Incidents récents</div>
+          <a href="tickets.html" class="card-action">Voir tout →</a>
+        </div>
+        <table>
+          <thead>
+            <tr><th>#</th><th>Description</th><th>Serveur</th><th>Priorité</th><th>Statut</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:#64748b;font-size:12px">#1042</td>
+              <td>Espace disque &lt; 10% sur /var</td>
+              <td><code>app-srv-03</code></td>
+              <td><span class="pill err">Critique</span></td>
+              <td><span class="pill warn">En cours</span></td>
+            </tr>
+            <tr>
+              <td style="color:#64748b;font-size:12px">#1041</td>
+              <td>Certificat SSL expire dans 12j</td>
+              <td><code>web-prod-01</code></td>
+              <td><span class="pill warn">Moyenne</span></td>
+              <td><span class="pill info">Assigné</span></td>
+            </tr>
+            <tr>
+              <td style="color:#64748b;font-size:12px">#1039</td>
+              <td>Latence réseau élevée (&gt; 80ms)</td>
+              <td><code>net-sw-02</code></td>
+              <td><span class="pill warn">Moyenne</span></td>
+              <td><span class="pill ok">Résolu</span></td>
+            </tr>
+            <tr>
+              <td style="color:#64748b;font-size:12px">#1038</td>
+              <td>Sauvegarde échouée (timeout)</td>
+              <td><code>db-prod-01</code></td>
+              <td><span class="pill info">Basse</span></td>
+              <td><span class="pill ok">Résolu</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">État des services</div>
+          <a href="serveurs.html" class="card-action">Détails →</a>
+        </div>
+        <div class="service-list">
+          <div class="service-row">
+            <div class="service-icon" style="background:#eff6ff">🌐</div>
+            <div>
+              <div class="service-name">Serveur Web</div>
+              <div class="service-host">192.168.1.10</div>
+            </div>
+            <div class="service-status">
+              <span class="pill ok">En ligne</span>
+              <div class="uptime-bar"><div class="uptime-fill" style="width:99%"></div></div>
+            </div>
+          </div>
+          <div class="service-row">
+            <div class="service-icon" style="background:#fefce8">🗄️</div>
+            <div>
+              <div class="service-name">Base de données</div>
+              <div class="service-host">192.168.1.20</div>
+            </div>
+            <div class="service-status">
+              <span class="pill ok">En ligne</span>
+              <div class="uptime-bar"><div class="uptime-fill" style="width:98%"></div></div>
+            </div>
+          </div>
+          <div class="service-row">
+            <div class="service-icon" style="background:#fff1f2">🔒</div>
+            <div>
+              <div class="service-name">VPN</div>
+              <div class="service-host">192.168.1.1</div>
+            </div>
+            <div class="service-status">
+              <span class="pill warn">Dégradé</span>
+              <div class="uptime-bar"><div class="uptime-fill" style="width:72%;background:#f59e0b"></div></div>
+            </div>
+          </div>
+          <div class="service-row">
+            <div class="service-icon" style="background:#f0fdf4">📁</div>
+            <div>
+              <div class="service-name">Partage fichiers</div>
+              <div class="service-host">192.168.1.50</div>
+            </div>
+            <div class="service-status">
+              <span class="pill ok">En ligne</span>
+              <div class="uptime-bar"><div class="uptime-fill" style="width:100%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

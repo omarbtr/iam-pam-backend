@@ -1,0 +1,69 @@
+<div class="mfav-page">
+  <div class="mfav-card">
+
+    <!-- Loading -->
+    <div *ngIf="loading" class="mfav-state">
+      <mat-spinner diameter="52"></mat-spinner>
+      <p>Chargement…</p>
+    </div>
+
+    <!-- Verify form -->
+    <ng-container *ngIf="!loading && status?.enrolled">
+      <div class="mfav-badge">
+        <mat-icon>lock</mat-icon>
+        Vérification de sécurité — MFA
+      </div>
+
+      <div class="mfav-icon">
+        <mat-icon>{{ methodIcon }}</mat-icon>
+      </div>
+
+      <h3>{{ methodLabel }}</h3>
+      <p class="mfav-instruction">{{ instruction }}</p>
+
+      <div *ngIf="errorMsg" class="error-msg">
+        <mat-icon>error_outline</mat-icon> {{ errorMsg }}
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="mfav-form">
+        <mat-form-field appearance="outline" class="code-field">
+          <mat-label>Code à 6 chiffres</mat-label>
+          <mat-icon matPrefix>pin</mat-icon>
+          <input matInput formControlName="code" maxlength="6"
+                 inputmode="numeric" autocomplete="one-time-code"
+                 placeholder="000000">
+          <mat-error>Code 6 chiffres requis</mat-error>
+        </mat-form-field>
+
+        <div class="mfav-actions">
+          <button mat-raised-button color="primary" type="submit" [disabled]="verifying">
+            <mat-spinner diameter="16" *ngIf="verifying" style="display:inline-block;margin-right:6px"></mat-spinner>
+            <mat-icon *ngIf="!verifying">verified_user</mat-icon>
+            {{ verifying ? 'Vérification…' : 'Vérifier' }}
+          </button>
+
+          <button mat-stroked-button type="button"
+                  *ngIf="status?.method === 'EMAIL' || status?.method === 'SMS'"
+                  (click)="sendOtp()" [disabled]="verifying">
+            <mat-icon>refresh</mat-icon> Renvoyer le code
+          </button>
+        </div>
+      </form>
+
+      <button mat-button class="skip-btn" (click)="skip()">
+        Ignorer pour cette session
+      </button>
+    </ng-container>
+
+    <!-- Not enrolled -->
+    <div *ngIf="!loading && !status?.enrolled" class="mfav-state">
+      <div class="mfav-icon mfav-icon--warn"><mat-icon>warning_amber</mat-icon></div>
+      <h3>MFA non configuré</h3>
+      <p>Vous n'avez pas encore activé de méthode MFA. Configurez-en une depuis votre profil.</p>
+      <button mat-raised-button color="primary" (click)="skip()">
+        Continuer sans MFA <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+
+  </div>
+</div>

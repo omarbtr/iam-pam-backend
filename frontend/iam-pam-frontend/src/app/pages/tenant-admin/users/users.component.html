@@ -1,0 +1,120 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Utilisateurs du tenant</h1>
+      <p class="page-subtitle">{{ tenantUsers.length }} membre(s)</p>
+    </div>
+    <span *ngIf="!canAdd" class="limit-badge">
+      <mat-icon>warning</mat-icon> Limite atteinte
+    </span>
+  </div>
+
+  <!-- Bannière AD non configuré -->
+  <div class="ad-warning" *ngIf="!adConfigured">
+    <mat-icon>info</mat-icon>
+    <span>L'annuaire Active Directory n'est pas configuré. <a [routerLink]="['/tenant-admin/ad-config']">Configurer l'AD</a> pour pouvoir importer des utilisateurs.</span>
+  </div>
+
+  <!-- Recherche AD -->
+  <mat-card class="search-card" *ngIf="adConfigured">
+    <div class="info-card-header">
+      <mat-icon>person_search</mat-icon>
+      <span>Utilisateurs de l'Active Directory ({{ adResults.length }})</span>
+      <span style="flex:1"></span>
+      <mat-spinner *ngIf="loadingSearch" diameter="18" style="margin-right:12px"></mat-spinner>
+    </div>
+    <div style="padding:20px">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Filtrer les utilisateurs AD</mat-label>
+        <input matInput [formControl]="searchCtrl" placeholder="Nom, prénom, email, identifiant...">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <div *ngIf="!loadingSearch && adResults.length === 0" class="no-results" style="padding:16px 0">
+        Aucun utilisateur trouvé dans l'AD
+      </div>
+
+      <div class="ad-results">
+        <div *ngFor="let u of adResults" class="ad-result-item">
+          <div class="user-avatar-sm">{{ ((u.firstName || '')[0] + (u.lastName || '')[0]) || u.username[0] | uppercase }}</div>
+          <div class="ad-user-info">
+            <strong>{{ u.firstName }} {{ u.lastName }}</strong>
+            <span class="mono">{{ u.username }}</span>
+            <span class="email" *ngIf="u.email">{{ u.email }}</span>
+          </div>
+          <button mat-stroked-button (click)="importFromAd(u)"
+                  [disabled]="!canAdd || isAlreadyImported(u)"
+                  [color]="isAlreadyImported(u) ? '' : 'primary'">
+            <mat-icon>{{ isAlreadyImported(u) ? 'check' : 'person_add' }}</mat-icon>
+            {{ isAlreadyImported(u) ? 'Déjà importé' : 'Importer' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </mat-card>
+
+  <!-- Liste membres du tenant -->
+  <mat-card style="padding:0;overflow:hidden">
+    <div class="info-card-header">
+      <mat-icon>people</mat-icon>
+      <span>Membres du tenant ({{ tenantUsers.length }})</span>
+      <span style="flex:1"></span>
+      <button mat-icon-button (click)="loadTenantUsers()" matTooltip="Actualiser la liste" [disabled]="loadingUsers">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+
+    <div *ngIf="loadingUsers" class="spinner-center"><mat-spinner diameter="36"></mat-spinner></div>
+
+    <table mat-table [dataSource]="tenantUsers" *ngIf="!loadingUsers" class="full-width">
+
+      <ng-container matColumnDef="avatar">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let u">
+          <div class="member-avatar">{{ getInitials(u) }}</div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="username">
+        <th mat-header-cell *matHeaderCellDef>Utilisateur</th>
+        <td mat-cell *matCellDef="let u">
+          <div class="user-cell">
+            <strong>{{ u.firstName || u.username }} {{ u.lastName || '' }}</strong>
+            <span class="mono">{{ u.username }}</span>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="email">
+        <th mat-header-cell *matHeaderCellDef>Email</th>
+        <td mat-cell *matCellDef="let u">{{ u.email || '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="roles">
+        <th mat-header-cell *matHeaderCellDef>Rôles</th>
+        <td mat-cell *matCellDef="let u">
+          <mat-chip-set>
+            <mat-chip *ngFor="let r of u.roles" class="role-chip">{{ r }}</mat-chip>
+          </mat-chip-set>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef></th>
+        <td mat-cell *matCellDef="let u">
+          <button mat-icon-button color="warn" (click)="removeUser(u.username)" matTooltip="Retirer du tenant">
+            <mat-icon>person_remove</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <div *ngIf="!loadingUsers && tenantUsers.length === 0" class="empty-state">
+      <mat-icon>people_outline</mat-icon>
+      <p>Aucun utilisateur dans ce tenant</p>
+    </div>
+  </mat-card>
+</div>

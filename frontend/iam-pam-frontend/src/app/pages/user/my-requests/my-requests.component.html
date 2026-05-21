@@ -1,0 +1,164 @@
+<div class="page-container">
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Mes demandes d'accès</h1>
+      <p class="page-subtitle">
+        {{ myRequests.length }} demande(s)
+        <span *ngIf="pendingCount > 0" class="pending-alert">{{ pendingCount }} en attente</span>
+        <span *ngIf="approvedCount > 0" class="approved-alert">{{ approvedCount }} actif(s)</span>
+      </p>
+    </div>
+    <button mat-raised-button color="primary" (click)="openForm()" *ngIf="!showForm">
+      <mat-icon>add</mat-icon> Nouvelle demande
+    </button>
+  </div>
+
+  <!-- Formulaire inline -->
+  <mat-card *ngIf="showForm" class="form-card">
+    <div class="form-header">
+      <mat-icon>send</mat-icon>
+      <span>Nouvelle demande d'accès</span>
+      <span style="flex:1"></span>
+      <button mat-icon-button (click)="showForm=false"><mat-icon>close</mat-icon></button>
+    </div>
+    <div style="padding:20px" [formGroup]="form">
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Ressource cible</mat-label>
+        <mat-icon matPrefix>dns</mat-icon>
+        <mat-select formControlName="resourceId">
+          <mat-option *ngIf="resources.length === 0" [value]="null" disabled>
+            Aucune ressource disponible — contactez votre administrateur
+          </mat-option>
+          <mat-option *ngFor="let r of resources" [value]="r.id">
+            <div class="resource-option">
+              <mat-icon style="font-size:14px;width:14px;height:14px;margin-right:6px">{{ resourceTypeIcon(r.type) }}</mat-icon>
+              <strong>{{ r.name }}</strong>
+              <span class="resource-option-meta">{{ r.type }} · {{ r.host }}</span>
+            </div>
+          </mat-option>
+        </mat-select>
+        <mat-error>Sélectionnez une ressource</mat-error>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Justification</mat-label>
+        <mat-icon matPrefix>comment</mat-icon>
+        <textarea matInput formControlName="justification" rows="3"
+          placeholder="Expliquez la raison de votre demande (recommandé)..."></textarea>
+        <mat-hint>Une bonne justification accélère l'approbation</mat-hint>
+      </mat-form-field>
+
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+        <mat-form-field appearance="outline" style="width:180px" *ngIf="!indefinite">
+          <mat-label>Durée d'accès</mat-label>
+          <mat-icon matPrefix>timer</mat-icon>
+          <input matInput type="number" formControlName="durationHours" min="1" max="720">
+          <span matSuffix>h</span>
+          <mat-error>Minimum 1 heure</mat-error>
+        </mat-form-field>
+        <div *ngIf="indefinite" class="indefinite-badge">
+          <mat-icon>all_inclusive</mat-icon> Durée indéterminée
+        </div>
+        <button mat-stroked-button type="button" (click)="toggleIndefinite()"
+                [color]="indefinite ? 'warn' : 'primary'">
+          <mat-icon>{{ indefinite ? 'timer' : 'all_inclusive' }}</mat-icon>
+          {{ indefinite ? 'Définir une durée' : 'Durée indéterminée' }}
+        </button>
+      </div>
+
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:8px">
+        <button mat-button (click)="showForm=false">Annuler</button>
+        <button mat-raised-button color="primary" (click)="submit()" [disabled]="form.invalid">
+          <mat-icon>send</mat-icon> Envoyer la demande
+        </button>
+      </div>
+    </div>
+  </mat-card>
+
+  <!-- Filtres statut -->
+  <div class="status-filters">
+    <button *ngFor="let f of statusFilters"
+            [class.active]="statusFilter === f.value"
+            (click)="statusFilter = f.value"
+            class="status-filter-btn">
+      <mat-icon>{{ f.icon }}</mat-icon>
+      {{ f.label }}
+      <span class="count-badge">{{ countByStatus(f.value) }}</span>
+    </button>
+  </div>
+
+  <mat-card style="padding:0;overflow:hidden">
+    <div *ngIf="loading" class="spinner-center"><mat-spinner diameter="36"></mat-spinner></div>
+
+    <table mat-table [dataSource]="filteredRequests" *ngIf="!loading" class="full-width">
+
+      <ng-container matColumnDef="resource">
+        <th mat-header-cell *matHeaderCellDef>Ressource</th>
+        <td mat-cell *matCellDef="let r">
+          <span class="resource-tag">{{ r.resourceName }}</span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="justification">
+        <th mat-header-cell *matHeaderCellDef>Justification</th>
+        <td mat-cell *matCellDef="let r" class="justif-cell">{{ r.justification || '—' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="duration">
+        <th mat-header-cell *matHeaderCellDef>Durée</th>
+        <td mat-cell *matCellDef="let r">
+          <span class="duration-tag" [class.duration-tag--infinite]="!r.durationHours">
+            {{ r.durationHours ? r.durationHours + 'h' : '∞' }}
+          </span>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Statut</th>
+        <td mat-cell *matCellDef="let r">
+          <div class="status-cell">
+            <span [class]="'status-badge ' + statusClass(r.status)">
+              <mat-icon style="font-size:12px;width:12px;height:12px;vertical-align:middle">{{ statusIcon(r.status) }}</mat-icon>
+              {{ r.status }}
+            </span>
+            <div *ngIf="r.reviewComment" class="review-comment">
+              <mat-icon style="font-size:11px">comment</mat-icon> {{ r.reviewComment }}
+            </div>
+            <div *ngIf="isExpiringSoon(r)" class="expiry-warn">
+              <mat-icon style="font-size:11px">warning</mat-icon> Expire bientôt
+            </div>
+          </div>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="requestedAt">
+        <th mat-header-cell *matHeaderCellDef>Demandé le</th>
+        <td mat-cell *matCellDef="let r" class="date-cell">{{ r.requestedAt | date:'dd/MM/yy HH:mm' }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="expiresAt">
+        <th mat-header-cell *matHeaderCellDef>Expire le</th>
+        <td mat-cell *matCellDef="let r" class="date-cell" [class.expiry-cell-soon]="isExpiringSoon(r)">
+          <span *ngIf="r.status === 'APPROVED' && !r.expiresAt" class="permanent-badge">
+            <mat-icon style="font-size:12px;width:12px;height:12px">all_inclusive</mat-icon> Permanent
+          </span>
+          <span *ngIf="r.expiresAt">{{ r.expiresAt | date:'dd/MM/yy HH:mm' }}</span>
+          <span *ngIf="!r.expiresAt && r.status !== 'APPROVED'">—</span>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="req-row"></tr>
+    </table>
+
+    <div *ngIf="!loading && filteredRequests.length === 0" class="empty-state">
+      <mat-icon>{{ statusFilter !== 'all' ? 'filter_list_off' : 'inbox' }}</mat-icon>
+      <p>{{ statusFilter !== 'all' ? 'Aucune demande avec ce statut' : 'Aucune demande pour le moment' }}</p>
+      <button mat-stroked-button *ngIf="statusFilter !== 'all'" (click)="statusFilter = 'all'">Voir toutes</button>
+      <button mat-raised-button color="primary" *ngIf="statusFilter === 'all' && !showForm" (click)="openForm()">
+        <mat-icon>add</mat-icon> Créer une demande
+      </button>
+    </div>
+  </mat-card>
+</div>

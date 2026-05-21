@@ -1,0 +1,110 @@
+<div class="fv-page" [class.fv-page--login]="fromLogin">
+
+  <div class="fv-card">
+
+    <!-- Badge "Connexion sécurisée" visible en mode login -->
+    <div *ngIf="fromLogin" class="login-badge">
+      <mat-icon>lock</mat-icon>
+      Vérification d'identité — Connexion sécurisée
+    </div>
+
+    <!-- Loading models -->
+    <div *ngIf="state === 'loading-models'" class="fv-state">
+      <mat-spinner diameter="56"></mat-spinner>
+      <p>Chargement des modèles de reconnaissance…</p>
+    </div>
+
+    <!-- Not enrolled -->
+    <div *ngIf="state === 'not-enrolled'" class="fv-state">
+      <div class="fv-icon fv-icon--warn"><mat-icon>face_retouching_off</mat-icon></div>
+      <h3>Reconnaissance faciale non configurée</h3>
+      <p>Vous n'avez pas encore enregistré votre visage.</p>
+      <div class="fv-actions">
+        <button mat-raised-button color="primary" (click)="goToMfa()">
+          <mat-icon>security</mat-icon> Configurer sur la page MFA
+        </button>
+        <button mat-stroked-button *ngIf="fromLogin" (click)="skip()">
+          Ignorer et continuer
+        </button>
+      </div>
+    </div>
+
+    <!-- Ready -->
+    <div *ngIf="state === 'ready'" class="fv-state">
+      <div class="fv-icon"><mat-icon>face_unlock</mat-icon></div>
+      <h3>Confirmez votre identité</h3>
+      <p>Activez la caméra et regardez droit vers l'objectif pour vous identifier.</p>
+      <div class="fv-actions">
+        <button mat-raised-button color="primary" (click)="startCamera()">
+          <mat-icon>videocam</mat-icon> Activer la caméra
+        </button>
+        <button mat-stroked-button *ngIf="fromLogin" (click)="skip()">
+          Ignorer pour cette session
+        </button>
+      </div>
+    </div>
+
+    <!-- Camera active -->
+    <div *ngIf="state === 'capturing'" class="fv-camera">
+      <div class="video-container">
+        <video #videoEl autoplay muted playsinline class="camera-video"></video>
+        <canvas #canvasEl class="camera-canvas"></canvas>
+        <div class="face-indicator" [class.face-indicator--detected]="faceDetected">
+          <mat-icon>{{ faceDetected ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+          {{ faceDetected ? 'Visage détecté' : 'Recherche du visage…' }}
+        </div>
+      </div>
+      <div class="fv-actions">
+        <button mat-raised-button color="primary" [disabled]="!faceDetected" (click)="captureAndVerify()">
+          <mat-icon>verified_user</mat-icon> Vérifier mon identité
+        </button>
+        <button mat-stroked-button *ngIf="fromLogin" (click)="skip()">Ignorer</button>
+      </div>
+    </div>
+
+    <!-- Processing -->
+    <div *ngIf="state === 'processing'" class="fv-state">
+      <mat-spinner diameter="56"></mat-spinner>
+      <p>Vérification en cours…</p>
+    </div>
+
+    <!-- Success -->
+    <div *ngIf="state === 'success'" class="fv-state">
+      <div class="fv-icon fv-icon--success"><mat-icon>verified</mat-icon></div>
+      <h3>Identité confirmée !</h3>
+      <p>Bienvenue, <strong>{{ auth.username }}</strong>. Votre visage correspond à votre profil.</p>
+      <button mat-raised-button color="primary" (click)="continueToApp()">
+        <mat-icon>arrow_forward</mat-icon> Accéder à l'application
+      </button>
+    </div>
+
+    <!-- Failed -->
+    <div *ngIf="state === 'failed'" class="fv-state">
+      <div class="fv-icon fv-icon--error"><mat-icon>no_accounts</mat-icon></div>
+      <h3>Vérification échouée</h3>
+      <p>
+        Votre visage ne correspond pas au profil enregistré
+        (distance : {{ verifyResult?.distance | number:'1.3-3' }}).
+      </p>
+      <div class="fv-actions">
+        <button mat-raised-button color="primary" (click)="retry()">
+          <mat-icon>refresh</mat-icon> Réessayer
+        </button>
+        <button mat-stroked-button *ngIf="fromLogin" (click)="skip()">
+          Ignorer pour cette session
+        </button>
+      </div>
+    </div>
+
+    <!-- Error -->
+    <div *ngIf="state === 'error'" class="fv-state">
+      <div class="fv-icon fv-icon--error"><mat-icon>error_outline</mat-icon></div>
+      <p>{{ errorMsg }}</p>
+      <div class="fv-actions">
+        <button mat-stroked-button (click)="retry()">Réessayer</button>
+        <button mat-stroked-button *ngIf="fromLogin" (click)="skip()">Ignorer</button>
+      </div>
+    </div>
+
+  </div>
+</div>

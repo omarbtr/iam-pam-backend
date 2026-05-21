@@ -1,0 +1,33 @@
+# Add Omar Bentahar + Omar Mltraduction to the running OpenLDAP container
+#
+# Apply with:
+#   docker cp ldap-add-omar-users.ldif openldap-dev:/tmp/
+#   docker exec openldap-dev ldapadd -x -H ldap://localhost -D "cn=admin,dc=bank-a,dc=local" -w Admin1234 -f /tmp/ldap-add-omar-users.ldif
+
+dn: uid=omar.bentahar,ou=users,dc=bank-a,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: omar.bentahar
+sn: Bentahar
+givenName: Omar
+cn: Omar Bentahar
+mail: omar4bentahar@gmail.com
+uidNumber: 1006
+gidNumber: 1006
+homeDirectory: /home/omar.bentahar
+userPassword: {SSHA}omar.btr
+
+dn: uid=omar.mltraduction,ou=users,dc=bank-a,dc=local
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: shadowAccount
+uid: omar.mltraduction
+sn: Mltraduction
+givenName: Omar
+cn: Omar Mltraduction
+mail: omarmltraduction@gmail.com
+uidNumber: 1007
+gidNumber: 1007
+homeDirectory: /home/omar.mltraduction
+userPassword: {SSHA}omar.btr

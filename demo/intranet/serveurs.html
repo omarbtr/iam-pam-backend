@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Infrastructure — ESPRIT Corp Intranet</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-logo">ESPRIT<span>Corp</span></div>
+  <div class="topbar-badge">Réseau Interne</div>
+  <nav class="topbar-nav">
+    <a href="index.html">Accueil</a>
+    <a href="serveurs.html" class="active">Infrastructure</a>
+    <a href="tickets.html">Tickets</a>
+    <a href="securite.html">Sécurité</a>
+    <div class="avatar">AB</div>
+  </nav>
+</div>
+
+<div class="layout">
+  <aside class="sidebar">
+    <div class="sidebar-section">Navigation</div>
+    <a href="index.html"    class="sidebar-item">📊 Tableau de bord</a>
+    <a href="serveurs.html" class="sidebar-item active">🖥️ Serveurs</a>
+    <a href="securite.html" class="sidebar-item">🔐 Sécurité</a>
+
+    <div class="sidebar-section">Gestion</div>
+    <a href="tickets.html"  class="sidebar-item">🎫 Tickets <span class="badge-count">3</span></a>
+    <a href="serveurs.html" class="sidebar-item">📦 Applications</a>
+    <a href="securite.html" class="sidebar-item">📋 Rapports</a>
+  </aside>
+
+  <main class="main">
+    <div class="page-title">Infrastructure & Serveurs</div>
+    <div class="page-subtitle">Inventaire des serveurs du réseau interne — mis à jour en temps réel</div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card green">
+        <div class="kpi-label">En ligne</div>
+        <div class="kpi-value">12</div>
+        <div class="kpi-change up">Opérationnels</div>
+      </div>
+      <div class="kpi-card amber">
+        <div class="kpi-label">Dégradés</div>
+        <div class="kpi-value">2</div>
+        <div class="kpi-change">Intervention requise</div>
+      </div>
+      <div class="kpi-card red">
+        <div class="kpi-label">Hors ligne</div>
+        <div class="kpi-value">1</div>
+        <div class="kpi-change down">Maintenance planifiée</div>
+      </div>
+      <div class="kpi-card blue">
+        <div class="kpi-label">CPU moyen</div>
+        <div class="kpi-value">38<small style="font-size:14px">%</small></div>
+        <div class="kpi-change">Charge normale</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Inventaire des serveurs</div>
+        <div style="display:flex;gap:8px">
+          <a href="#" class="btn btn-outline" style="font-size:12px;padding:5px 12px">⬇ Exporter</a>
+          <a href="#" class="btn btn-primary" style="font-size:12px;padding:5px 12px">+ Ajouter</a>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Hostname</th>
+            <th>IP</th>
+            <th>Rôle</th>
+            <th>OS</th>
+            <th>CPU</th>
+            <th>RAM</th>
+            <th>Disque</th>
+            <th>Statut</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>web-prod-01</strong></td>
+            <td><code>192.168.1.10</code></td>
+            <td>Serveur Web</td>
+            <td>Ubuntu 22.04</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:24%;background:#22c55e"></div></div>
+                <span style="font-size:12px;color:#64748b">24%</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:61%;background:#3b82f6"></div></div>
+                <span style="font-size:12px;color:#64748b">4.9/8 Go</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:45%;background:#22c55e"></div></div>
+                <span style="font-size:12px;color:#64748b">45%</span>
+              </div>
+            </td>
+            <td><span class="pill ok">En ligne</span></td>
+          </tr>
+          <tr>
+            <td><strong>db-prod-01</strong></td>
+            <td><code>192.168.1.20</code></td>
+            <td>Base de données</td>
+            <td>Ubuntu 22.04</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:68%;background:#f59e0b"></div></div>
+                <span style="font-size:12px;color:#64748b">68%</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:87%;background:#ef4444"></div></div>
+                <span style="font-size:12px;color:#64748b">14/16 Go</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:72%;background:#f59e0b"></div></div>
+                <span style="font-size:12px;color:#64748b">72%</span>
+              </div>
+            </td>
+            <td><span class="pill ok">En ligne</span></td>
+          </tr>
+          <tr>
+            <td><strong>db-prod-02</strong></td>
+            <td><code>192.168.1.21</code></td>
+            <td>Base de données (réplica)</td>
+            <td>Ubuntu 22.04</td>
+            <td><span style="font-size:12px;color:#94a3b8">—</span></td>
+            <td><span style="font-size:12px;color:#94a3b8">—</span></td>
+            <td><span style="font-size:12px;color:#94a3b8">—</span></td>
+            <td><span class="pill err">Maintenance</span></td>
+          </tr>
+          <tr>
+            <td><strong>app-srv-01</strong></td>
+            <td><code>192.168.1.30</code></td>
+            <td>Applicatif</td>
+            <td>Debian 12</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:31%;background:#22c55e"></div></div>
+                <span style="font-size:12px;color:#64748b">31%</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:50%;background:#3b82f6"></div></div>
+                <span style="font-size:12px;color:#64748b">4/8 Go</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:38%;background:#22c55e"></div></div>
+                <span style="font-size:12px;color:#64748b">38%</span>
+              </div>
+            </td>
+            <td><span class="pill ok">En ligne</span></td>
+          </tr>
+          <tr>
+            <td><strong>app-srv-03</strong></td>
+            <td><code>192.168.1.32</code></td>
+            <td>Applicatif</td>
+            <td>Debian 12</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:45%;background:#22c55e"></div></div>
+                <span style="font-size:12px;color:#64748b">45%</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:55%;background:#3b82f6"></div></div>
+                <span style="font-size:12px;color:#64748b">4.4/8 Go</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:91%;background:#ef4444"></div></div>
+                <span style="font-size:12px;color:#64748b">91%</span>
+              </div>
+            </td>
+            <td><span class="pill warn">Alerte disque</span></td>
+          </tr>
+          <tr>
+            <td><strong>mail-srv-01</strong></td>
+            <td><code>192.168.1.40</code></td>
+            <td>Messagerie</td>
+            <td>Ubuntu 20.04</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:18%;background:#22c55e"></div></div>
+                <span style="font-size:12px;color:#64748b">18%</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:37%;background:#3b82f6"></div></div>
+                <span style="font-size:12px;color:#64748b">3/8 Go</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:55%;background:#22c55e"></div></div>
+                <span style="font-size:12px;color:#64748b">55%</span>
+              </div>
+            </td>
+            <td><span class="pill ok">En ligne</span></td>
+          </tr>
+          <tr>
+            <td><strong>vpn-gw-01</strong></td>
+            <td><code>192.168.1.1</code></td>
+            <td>Passerelle VPN</td>
+            <td>pfSense 2.7</td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:77%;background:#f59e0b"></div></div>
+                <span style="font-size:12px;color:#64748b">77%</span>
+              </div>
+            </td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="progress-bar" style="width:60px"><div class="progress-fill" style="width:42%;background:#3b82f6"></div></div>
+                <span style="font-size:12px;color:#64748b">2.1/4 Go</span>
+              </div>
+            </td>
+            <td><span style="font-size:12px;color:#94a3b8">N/A</span></td>
+            <td><span class="pill warn">Dégradé</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

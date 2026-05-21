@@ -1,0 +1,80 @@
+<div class="rdp-page">
+
+  <!-- Top bar -->
+  <div class="rdp-topbar">
+    <div class="rdp-title">
+      <mat-icon>desktop_windows</mat-icon>
+      <span>{{ resourceName }}</span>
+      <span class="session-id">#{{ requestId }}</span>
+    </div>
+
+    <div class="rdp-status">
+      <span class="status-dot"
+        [class.dot--connected]="connected"
+        [class.dot--connecting]="connecting"
+        [class.dot--error]="!!connectionError">
+      </span>
+      <span *ngIf="connecting">Connexion...</span>
+      <span *ngIf="connected">Connecté</span>
+      <span *ngIf="!connecting && !connected && !connectionError">Déconnecté</span>
+      <span *ngIf="connectionError" class="error-text">{{ connectionError }}</span>
+    </div>
+
+    <!-- Audit log toggle button -->
+    <button class="audit-toggle-btn" (click)="toggleAuditPanel()"
+            [class.audit-toggle-btn--active]="showAuditPanel"
+            matTooltip="{{ showAuditPanel ? 'Fermer les logs' : 'Voir les logs d\'audit' }}">
+      <mat-icon>receipt_long</mat-icon>
+      <span>Logs</span>
+      <span class="audit-badge" *ngIf="auditLogs.length > 0">{{ auditLogs.length }}</span>
+    </button>
+
+    <button mat-stroked-button class="disconnect-btn" (click)="disconnect()">
+      <mat-icon>power_settings_new</mat-icon>
+      Terminer
+    </button>
+  </div>
+
+  <!-- Body: RDP canvas + optional audit sidebar -->
+  <div class="rdp-body">
+
+    <!-- Guacamole canvas container -->
+    <div class="rdp-wrap">
+      <div *ngIf="connecting" class="rdp-loading">
+        <mat-spinner diameter="40"></mat-spinner>
+        <span>Ouverture de la session RDP...</span>
+      </div>
+      <div #displayContainer class="rdp-display"></div>
+    </div>
+
+    <!-- Audit log sidebar -->
+    <div class="audit-sidebar" *ngIf="showAuditPanel">
+      <div class="audit-header">
+        <mat-icon>receipt_long</mat-icon>
+        <span>Journal d'audit</span>
+        <span class="audit-refresh-hint">↻ toutes les 10s</span>
+      </div>
+
+      <div class="audit-empty" *ngIf="auditLogs.length === 0">
+        <mat-icon>hourglass_empty</mat-icon>
+        <p>Aucun événement pour l'instant</p>
+      </div>
+
+      <div class="audit-list" *ngIf="auditLogs.length > 0">
+        <div *ngFor="let log of auditLogs" class="audit-entry">
+          <div class="audit-icon" [style.color]="eventColor(log.eventType)">
+            <mat-icon>{{ eventIcon(log.eventType) }}</mat-icon>
+          </div>
+          <div class="audit-content">
+            <span class="audit-type" [style.color]="eventColor(log.eventType)">
+              {{ log.eventType.replace('_', ' ') }}
+            </span>
+            <span class="audit-detail" *ngIf="log.detail">{{ log.detail }}</span>
+          </div>
+          <span class="audit-time">{{ log.occurredAt | date:'HH:mm:ss' }}</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
