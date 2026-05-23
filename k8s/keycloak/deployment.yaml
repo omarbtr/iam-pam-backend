@@ -20,7 +20,7 @@ spec:
       containers:
         - name: keycloak
           image: quay.io/keycloak/keycloak:23.0
-          args: ["start-dev"]
+          args: ["start-dev", "--import-realm", "--features=scripts"]
           ports:
             - containerPort: 8080
           envFrom:
@@ -37,6 +37,10 @@ spec:
                 secretKeyRef:
                   name: keycloak-secret
                   key: KC_DB_PASSWORD
+          volumeMounts:
+            - name: realm-import
+              mountPath: /opt/keycloak/data/import
+              readOnly: true
           readinessProbe:
             httpGet:
               path: /realms/master
@@ -52,3 +56,7 @@ spec:
             limits:
               memory: "1.5Gi"
               cpu: "1500m"
+      volumes:
+        - name: realm-import
+          configMap:
+            name: keycloak-realm

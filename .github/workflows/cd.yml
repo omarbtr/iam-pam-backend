@@ -15,7 +15,13 @@ jobs:
           kubectl apply -f k8s/namespace.yaml
           kubectl apply -f k8s/ingress.yaml
           kubectl apply -f k8s/postgresql/
-          kubectl apply -f k8s/keycloak/
+          kubectl create configmap keycloak-realm \
+            --from-file=realm-import.json=k8s/keycloak/realm-import.json \
+            -n iam-pam --dry-run=client -o yaml | kubectl apply -f -
+          kubectl apply -f k8s/keycloak/configmap.yaml
+          kubectl apply -f k8s/keycloak/secret.yaml
+          kubectl apply -f k8s/keycloak/deployment.yaml
+          kubectl apply -f k8s/keycloak/service.yaml
           kubectl apply -f k8s/backend/
           kubectl apply -f k8s/frontend/
           kubectl apply -f k8s/openldap/
